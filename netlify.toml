@@ -1,15 +1,15 @@
-# Netlify configuration for www.thefractionalexec.com.au
+# Netlify configuration for thefractionalexec.com.au
 # Configured to allow all crawlers and bots
 
 [build]
   publish = "."
 
-# Redirect www to non-www (or vice versa) - uncomment preferred
-# [[redirects]]
-#   from = "https://thefractionalexec.com.au/*"
-#   to = "https://www.thefractionalexec.com.au/:splat"
-#   status = 301
-#   force = true
+# Redirect www to non-www (canonical URL)
+[[redirects]]
+  from = "https://www.thefractionalexec.com.au/*"
+  to = "https://thefractionalexec.com.au/:splat"
+  status = 301
+  force = true
 
 # Headers for all pages
 [[headers]]

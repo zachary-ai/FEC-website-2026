@@ -1,4 +1,4 @@
-# robots.txt for www.thefractionalexec.com.au
+# robots.txt for thefractionalexec.com.au
 # Allow all crawlers and AI systems
 
 User-agent: *
@@ -46,4 +46,4 @@ User-agent: Google-Extended
 Allow: /
 
 # Sitemap location
-Sitemap: https://www.thefractionalexec.com.au/sitemap.xml
+Sitemap: https://thefractionalexec.com.au/sitemap.xml
