@@ -1,0 +1,55 @@
+# Netlify configuration for www.thefractionalexec.com.au
+# Configured to allow all crawlers and bots
+
+[build]
+  publish = "."
+
+# Redirect www to non-www (or vice versa) - uncomment preferred
+# [[redirects]]
+#   from = "https://thefractionalexec.com.au/*"
+#   to = "https://www.thefractionalexec.com.au/:splat"
+#   status = 301
+#   force = true
+
+# Headers for all pages
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Prevent clickjacking but allow crawlers
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Headers for static assets - longer cache
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# robots.txt - ensure it's accessible
+[[headers]]
+  for = "/robots.txt"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=86400"
+
+# IMPORTANT: Disable Netlify's bot protection
+# This must also be configured in Netlify dashboard:
+# Site settings > Domain management > Bot protection > Disable
+# Or Site settings > Build & deploy > Post processing > Disable prerendering
+
+# Custom 404 page
+[[redirects]]
+  from = "/*"
+  to = "/404.html"
+  status = 404

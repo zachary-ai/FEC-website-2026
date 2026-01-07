@@ -1,0 +1,24 @@
+# Netlify headers - Allow crawlers and bots
+# This overrides any default bot protection
+
+/*
+  # Allow all origins for crawlers
+  Access-Control-Allow-Origin: *
+
+  # Standard security headers (but not blocking bots)
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+  # Cache control for better SEO crawling
+  Cache-Control: public, max-age=3600
+
+# Specific headers for robots.txt
+/robots.txt
+  Content-Type: text/plain
+  Cache-Control: public, max-age=86400
+
+# Specific headers for sitemap
+/sitemap.xml
+  Content-Type: application/xml
+  Cache-Control: public, max-age=86400
