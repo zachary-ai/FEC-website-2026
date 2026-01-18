@@ -3,6 +3,7 @@
 
 [build]
   publish = "."
+  functions = "netlify/functions"
 
 # Redirect www to non-www (canonical URL)
 [[redirects]]

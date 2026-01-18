@@ -1,0 +1,8 @@
+{
+  "name": "fec-netlify-functions",
+  "version": "1.0.0",
+  "description": "Serverless functions for thefractionalexec.com.au",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0"
+  }
+}
