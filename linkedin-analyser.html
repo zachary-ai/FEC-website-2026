@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html data-wf-page="linkedin-analyzer" data-wf-site="64b91a2d1701d9e5b018588d">
+<html data-wf-page="linkedin-analyser" data-wf-site="64b91a2d1701d9e5b018588d">
 <head>
   <meta charset="utf-8">
-  <title>Free LinkedIn Profile Analyzer for Fractional Executives | Fractional Exec</title>
-  <meta content="Get instant AI-powered recommendations to optimize your LinkedIn profile and attract fractional executive opportunities. Free tool from Fractional Exec." name="description">
-  <meta content="Free LinkedIn Profile Analyzer for Fractional Executives" property="og:title">
-  <meta content="Get instant AI-powered recommendations to optimize your LinkedIn profile and attract fractional executive opportunities." property="og:description">
-  <meta content="Free LinkedIn Profile Analyzer for Fractional Executives" property="twitter:title">
-  <meta content="Get instant AI-powered recommendations to optimize your LinkedIn profile and attract fractional executive opportunities." property="twitter:description">
+  <title>Free LinkedIn Profile Analyser for Fractional Executives | Fractional Exec</title>
+  <meta content="Get instant AI-powered recommendations to optimise your LinkedIn profile and attract fractional executive opportunities. Free tool from Fractional Exec." name="description">
+  <meta content="Free LinkedIn Profile Analyser for Fractional Executives" property="og:title">
+  <meta content="Get instant AI-powered recommendations to optimise your LinkedIn profile and attract fractional executive opportunities." property="og:description">
+  <meta content="Free LinkedIn Profile Analyser for Fractional Executives" property="twitter:title">
+  <meta content="Get instant AI-powered recommendations to optimise your LinkedIn profile and attract fractional executive opportunities." property="twitter:description">
   <meta property="og:type" content="website">
   <meta content="summary_large_image" name="twitter:card">
   <meta content="width=device-width, initial-scale=1" name="viewport">
@@ -41,7 +41,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "LinkedIn Profile Analyzer for Fractional Executives",
+    "name": "LinkedIn Profile Analyser for Fractional Executives",
     "applicationCategory": "BusinessApplication",
     "operatingSystem": "Web",
     "offers": {
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       "price": "0",
       "priceCurrency": "AUD"
     },
-    "description": "Free AI-powered tool to analyze and improve LinkedIn profiles for fractional executives. Get instant recommendations for your headline, about section, and priority actions.",
+    "description": "Free AI-powered tool to analyse and improve LinkedIn profiles for fractional executives. Upload your LinkedIn PDF export for comprehensive analysis of your headline, about section, experience, and more.",
     "author": {
       "@type": "Organization",
       "name": "The Fractional Exec Community",
@@ -58,27 +58,103 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   }
   </script>
   <style>
-    /* LinkedIn Analyzer specific styles */
-    .analyzer-form-wrapper {
+    /* LinkedIn Analyser specific styles */
+    .analyser-form-wrapper {
       max-width: 700px;
       margin: 0 auto;
     }
-    .analyzer-textarea {
-      width: 100%;
-      min-height: 200px;
-      padding: 16px;
-      border: 2px solid #e5e7eb;
+    .upload-section {
+      margin-bottom: 24px;
+    }
+    .upload-label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .upload-sublabel {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 12px;
+      display: block;
+    }
+    .file-upload-wrapper {
+      border: 2px dashed #e5e7eb;
       border-radius: 12px;
-      font-family: inherit;
-      font-size: 16px;
-      resize: vertical;
-      margin-bottom: 16px;
+      padding: 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #fafafa;
     }
-    .analyzer-textarea:focus {
-      outline: none;
+    .file-upload-wrapper:hover {
       border-color: #111;
+      background: #f5f5f5;
     }
-    .analyzer-email {
+    .file-upload-wrapper.has-file {
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }
+    .file-upload-wrapper.drag-over {
+      border-color: #111;
+      background: #f0f0f0;
+    }
+    .file-upload-wrapper input[type="file"] {
+      display: none;
+    }
+    .upload-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 12px;
+      color: #666;
+    }
+    .upload-text {
+      color: #666;
+      margin-bottom: 8px;
+    }
+    .upload-text strong {
+      color: #111;
+    }
+    .file-name {
+      font-size: 14px;
+      color: #16a34a;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .optional-badge {
+      display: inline-block;
+      background: #e5e7eb;
+      color: #666;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 8px;
+      font-weight: 500;
+    }
+    .required-badge {
+      display: inline-block;
+      background: #111;
+      color: white;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 8px;
+      font-weight: 500;
+    }
+    .instruction-box {
+      background: #f9fafb;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    .instruction-box ol {
+      margin: 8px 0 0 0;
+      padding-left: 20px;
+    }
+    .instruction-box li {
+      margin-bottom: 4px;
+    }
+    .analyser-email {
       width: 100%;
       padding: 14px 16px;
       border: 2px solid #e5e7eb;
@@ -87,11 +163,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       font-size: 16px;
       margin-bottom: 16px;
     }
-    .analyzer-email:focus {
+    .analyser-email:focus {
       outline: none;
       border-color: #111;
     }
-    .analyzer-button {
+    .analyser-button {
       width: 100%;
       padding: 16px 24px;
       background: #111;
@@ -104,10 +180,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       cursor: pointer;
       transition: background 0.2s;
     }
-    .analyzer-button:hover {
+    .analyser-button:hover {
       background: #333;
     }
-    .analyzer-button:disabled {
+    .analyser-button:disabled {
       background: #666;
       cursor: not-allowed;
     }
@@ -152,13 +228,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     .result-card li {
       margin-bottom: 8px;
     }
-    .alternative-headline {
+    .result-card p {
+      margin-bottom: 12px;
+    }
+    .suggestion-box {
       background: white;
       border: 1px solid #e5e7eb;
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 8px;
-      font-style: italic;
       white-space: pre-wrap;
     }
     .priority-action {
@@ -218,11 +296,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     .error-message.show {
       display: block;
     }
+    /* Visual analysis section */
+    .visual-analysis {
+      display: none;
+    }
+    .visual-analysis.show {
+      display: block;
+    }
   </style>
 </head>
 <body>
   <div class="page-wrapper">
-    <!-- NAVIGATION - Copy exact structure from zacbot.html -->
+    <!-- NAVIGATION -->
     <div data-animation="default" class="header w-nav" data-easing2="ease" fs-scrolldisable-element="smart-nav" data-easing="ease" data-collapse="medium" data-w-id="dcc53c2d-00cf-bf86-813b-e271a944502f" role="banner" data-duration="400">
       <div class="navbar_container">
         <a href="index.html" class="navbar_logo-link w-nav-brand"><img src="images/Icon.svg" loading="lazy" alt="" class="logo-image">
@@ -272,45 +357,90 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <div class="padding-section-large">
               <div class="heading-2-col">
                 <div class="hero-content_left">
-                  <a href="index.html" class="breadcumb w-inline-block">
-                    <div>Home /</div>
+                  <a href="tools.html" class="breadcumb w-inline-block">
+                    <div>Tools /</div>
                   </a>
-                  <h1 class="heading-h3">Free LinkedIn Profile Analyzer for Fractional Executives</h1>
-                  <p class="text-size-large text-opacity-80">Get AI-powered recommendations to optimize your LinkedIn profile and attract the right clients. Paste your headline and about section below for instant analysis.</p>
+                  <h1 class="heading-h3">Free LinkedIn Profile Analyser for Fractional Executives</h1>
+                  <p class="text-size-large text-opacity-80">Get comprehensive AI-powered analysis of your entire LinkedIn profile. Upload your profile PDF for detailed feedback on your headline, about section, experience, positioning, and more.</p>
                 </div>
               </div>
 
-              <!-- Analyzer Form -->
-              <div class="analyzer-form-wrapper">
+              <!-- Analyser Form -->
+              <div class="analyser-form-wrapper">
                 <div class="spacer-large"></div>
 
                 <div class="error-message" id="error-message"></div>
 
-                <form id="analyzer-form">
-                  <label for="profile-text" style="font-weight: 600; display: block; margin-bottom: 8px;">Paste your LinkedIn Headline and About section:</label>
-                  <textarea
-                    id="profile-text"
-                    class="analyzer-textarea"
-                    placeholder="Example:
+                <form id="analyser-form">
+                  <!-- PDF Upload (Required) -->
+                  <div class="upload-section">
+                    <label class="upload-label">
+                      LinkedIn Profile PDF <span class="required-badge">Required</span>
+                    </label>
+                    <div class="instruction-box">
+                      <strong>How to export your LinkedIn PDF:</strong>
+                      <ol>
+                        <li>Go to your LinkedIn profile</li>
+                        <li>Click the <strong>"More"</strong> button (below your banner)</li>
+                        <li>Select <strong>"Save to PDF"</strong></li>
+                        <li>Upload the downloaded file here</li>
+                      </ol>
+                    </div>
+                    <div class="file-upload-wrapper" id="pdf-upload-wrapper">
+                      <input type="file" id="pdf-file" accept=".pdf" required>
+                      <div class="upload-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12l-3-3m0 0l-3 3m3-3v6m-1.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                        </svg>
+                      </div>
+                      <p class="upload-text"><strong>Click to upload</strong> or drag and drop</p>
+                      <p class="upload-text">PDF file only (max 10MB)</p>
+                      <p class="file-name" id="pdf-file-name"></p>
+                    </div>
+                  </div>
 
-Headline: Fractional CMO | B2B SaaS Growth Expert
+                  <!-- Screenshot Upload (Optional) -->
+                  <div class="upload-section">
+                    <label class="upload-label">
+                      Full-Page Screenshot <span class="optional-badge">Optional - adds visual analysis</span>
+                    </label>
+                    <span class="upload-sublabel">Get feedback on your profile photo, banner, and visual presentation</span>
+                    <div class="instruction-box">
+                      <strong>How to capture a full-page screenshot:</strong>
+                      <ol>
+                        <li>Install the free <a href="https://chrome.google.com/webstore/detail/gofullpage/fdpohaocaechififmbbbbbknoalclacl" target="_blank" style="text-decoration: underline;">GoFullPage Chrome extension</a></li>
+                        <li>Go to your LinkedIn profile while logged in</li>
+                        <li>Click the GoFullPage icon to capture</li>
+                        <li>Download as PNG and upload here</li>
+                      </ol>
+                    </div>
+                    <div class="file-upload-wrapper" id="screenshot-upload-wrapper">
+                      <input type="file" id="screenshot-file" accept="image/*">
+                      <div class="upload-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                        </svg>
+                      </div>
+                      <p class="upload-text"><strong>Click to upload</strong> or drag and drop</p>
+                      <p class="upload-text">PNG, JPG up to 10MB</p>
+                      <p class="file-name" id="screenshot-file-name"></p>
+                    </div>
+                  </div>
 
-About: I help B2B SaaS companies scale from $1M to $10M ARR through strategic marketing leadership. 15+ years experience at companies like Atlassian and Canva. Now working with 2-3 select clients as a fractional CMO.
+                  <!-- Email (Optional) -->
+                  <div class="upload-section">
+                    <label for="email" class="upload-label">Email <span class="optional-badge">Optional</span></label>
+                    <span class="upload-sublabel">Get a copy of your analysis sent to your inbox</span>
+                    <input
+                      type="email"
+                      id="email"
+                      class="analyser-email"
+                      placeholder="your@email.com"
+                    >
+                  </div>
 
-(Paste your full headline and about section here...)"
-                    required
-                  ></textarea>
-
-                  <label for="email" style="font-weight: 600; display: block; margin-bottom: 8px;">Email (optional - get your full report):</label>
-                  <input
-                    type="email"
-                    id="email"
-                    class="analyzer-email"
-                    placeholder="your@email.com"
-                  >
-
-                  <button type="submit" class="analyzer-button" id="submit-btn">
-                    Analyze My Profile
+                  <button type="submit" class="analyser-button" id="submit-btn">
+                    Analyse My Profile
                   </button>
                 </form>
               </div>
@@ -333,20 +463,38 @@ About: I help B2B SaaS companies scale from $1M to $10M ARR through strategic ma
 
                 <div class="spacer-large"></div>
 
+                <!-- Executive Summary -->
+                <div class="result-card" id="summary-card">
+                  <h4>Executive Summary</h4>
+                  <div id="summary-content"></div>
+                </div>
+
                 <!-- Headline Analysis -->
-                <div class="result-card" id="headline-analysis">
+                <div class="result-card" id="headline-card">
                   <h4>Headline Analysis</h4>
                   <div id="headline-content"></div>
                 </div>
 
                 <!-- About Section Analysis -->
-                <div class="result-card" id="about-analysis">
+                <div class="result-card" id="about-card">
                   <h4>About Section Analysis</h4>
                   <div id="about-content"></div>
                 </div>
 
+                <!-- Experience Analysis -->
+                <div class="result-card" id="experience-card">
+                  <h4>Experience & Positioning</h4>
+                  <div id="experience-content"></div>
+                </div>
+
+                <!-- Visual Analysis (only shows if screenshot provided) -->
+                <div class="result-card visual-analysis" id="visual-card">
+                  <h4>Visual Analysis</h4>
+                  <div id="visual-content"></div>
+                </div>
+
                 <!-- Priority Actions -->
-                <div class="result-card" id="priority-actions">
+                <div class="result-card" id="actions-card">
                   <h4>Priority Actions</h4>
                   <div id="actions-content"></div>
                 </div>
@@ -354,10 +502,10 @@ About: I help B2B SaaS companies scale from $1M to $10M ARR through strategic ma
                 <!-- CTA -->
                 <div class="spacer-xlarge"></div>
                 <div class="text-align-center">
-                  <p class="text-size-large"><strong>Want personalized coaching on your fractional positioning?</strong></p>
+                  <p class="text-size-large"><strong>Want personalised coaching on your fractional positioning?</strong></p>
                   <div class="spacer-small"></div>
                   <a href="https://mobiusxyz.notion.site/2e9752a1921080a89946d1112aa83143?pvs=105" target="_blank" class="btn w-inline-block">
-                    <div>Join the Fractional Exec Community - $40/month</div>
+                    <div>Join the Fractional Exec Community</div>
                   </a>
                 </div>
               </div>
@@ -373,7 +521,7 @@ About: I help B2B SaaS companies scale from $1M to $10M ARR through strategic ma
             <div class="padding-section-large">
               <div class="text-align-center">
                 <p><strong>How It Works</strong></p>
-                <h3 class="heading-h3">Optimize Your LinkedIn in 3 Steps</h3>
+                <h3 class="heading-h3">Optimise Your LinkedIn in 3 Steps</h3>
               </div>
               <div class="spacer-large"></div>
               <div class="grid-3-col">
@@ -384,9 +532,9 @@ About: I help B2B SaaS companies scale from $1M to $10M ARR through strategic ma
                           <path d="M9.375 15L13.125 18.75L20.625 11.25M27.5 15C27.5 21.9036 21.9036 27.5 15 27.5C8.09644 27.5 2.5 21.9036 2.5 15C2.5 8.09644 8.09644 2.5 15 2.5C21.9036 2.5 27.5 8.09644 27.5 15Z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
                         </svg></div>
                     </div>
-                    <h6 class="heading-style-h6">1. Paste Your Profile</h6>
+                    <h6 class="heading-style-h6">1. Export Your Profile</h6>
                   </div>
-                  <p class="text-opacity-80">Copy your LinkedIn headline and about section, then paste them into the form above.</p>
+                  <p class="text-opacity-80">Download your LinkedIn profile as a PDF using the "Save to PDF" option. Optionally capture a full-page screenshot for visual feedback.</p>
                 </div>
                 <div class="support-card">
                   <div class="support-title-wrapper">
@@ -397,7 +545,7 @@ About: I help B2B SaaS companies scale from $1M to $10M ARR through strategic ma
                     </div>
                     <h6 class="heading-style-h6">2. Get AI Analysis</h6>
                   </div>
-                  <p class="text-opacity-80">Our AI analyzes your profile against best practices for fractional executives.</p>
+                  <p class="text-opacity-80">Our AI analyses your entire profile against best practices for fractional executives attracting high-quality clients.</p>
                 </div>
                 <div class="support-card">
                   <div class="support-title-wrapper">
@@ -408,7 +556,7 @@ About: I help B2B SaaS companies scale from $1M to $10M ARR through strategic ma
                     </div>
                     <h6 class="heading-style-h6">3. Implement Changes</h6>
                   </div>
-                  <p class="text-opacity-80">Use the specific recommendations and alternative headlines to improve your profile.</p>
+                  <p class="text-opacity-80">Use the specific recommendations, alternative headlines, and priority actions to transform your profile.</p>
                 </div>
               </div>
             </div>
@@ -496,7 +644,7 @@ About: I help B2B SaaS companies scale from $1M to $10M ARR through strategic ma
       </section>
     </div>
 
-    <!-- FOOTER - Copy exact structure from zacbot.html -->
+    <!-- FOOTER -->
     <footer class="footer">
       <div class="padding-global">
         <div class="container-large">
@@ -536,7 +684,7 @@ About: I help B2B SaaS companies scale from $1M to $10M ARR through strategic ma
                       <a href="tools.html" class="footer_link">Tools</a>
                     </div>
                     <div style="display:flex; flex-direction:column;">
-                      <a href="linkedin-analyzer.html" aria-current="page" class="footer_link w--current">LinkedIn Analyzer</a>
+                      <a href="linkedin-analyser.html" aria-current="page" class="footer_link w--current">LinkedIn Analyser</a>
                     </div>
                   </div>
                 </div>
@@ -565,37 +713,117 @@ About: I help B2B SaaS companies scale from $1M to $10M ARR through strategic ma
   <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=64b91a2d1701d9e5b018588d" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
   <script src="js/webflow.js" type="text/javascript"></script>
 
-  <!-- LinkedIn Analyzer JavaScript -->
+  <!-- LinkedIn Analyser JavaScript -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const form = document.getElementById('analyzer-form');
+      const form = document.getElementById('analyser-form');
       const submitBtn = document.getElementById('submit-btn');
       const resultsSection = document.getElementById('results-section');
       const errorMessage = document.getElementById('error-message');
 
+      // File upload elements
+      const pdfInput = document.getElementById('pdf-file');
+      const pdfWrapper = document.getElementById('pdf-upload-wrapper');
+      const pdfFileName = document.getElementById('pdf-file-name');
+
+      const screenshotInput = document.getElementById('screenshot-file');
+      const screenshotWrapper = document.getElementById('screenshot-upload-wrapper');
+      const screenshotFileName = document.getElementById('screenshot-file-name');
+
+      // File upload click handlers
+      pdfWrapper.addEventListener('click', () => pdfInput.click());
+      screenshotWrapper.addEventListener('click', () => screenshotInput.click());
+
+      // File change handlers
+      pdfInput.addEventListener('change', function() {
+        if (this.files[0]) {
+          pdfFileName.textContent = this.files[0].name;
+          pdfWrapper.classList.add('has-file');
+        } else {
+          pdfFileName.textContent = '';
+          pdfWrapper.classList.remove('has-file');
+        }
+      });
+
+      screenshotInput.addEventListener('change', function() {
+        if (this.files[0]) {
+          screenshotFileName.textContent = this.files[0].name;
+          screenshotWrapper.classList.add('has-file');
+        } else {
+          screenshotFileName.textContent = '';
+          screenshotWrapper.classList.remove('has-file');
+        }
+      });
+
+      // Drag and drop handlers
+      [pdfWrapper, screenshotWrapper].forEach((wrapper, index) => {
+        const input = index === 0 ? pdfInput : screenshotInput;
+
+        wrapper.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          wrapper.classList.add('drag-over');
+        });
+
+        wrapper.addEventListener('dragleave', () => {
+          wrapper.classList.remove('drag-over');
+        });
+
+        wrapper.addEventListener('drop', (e) => {
+          e.preventDefault();
+          wrapper.classList.remove('drag-over');
+          if (e.dataTransfer.files[0]) {
+            input.files = e.dataTransfer.files;
+            input.dispatchEvent(new Event('change'));
+          }
+        });
+      });
+
+      // Form submission
       form.addEventListener('submit', async function(e) {
         e.preventDefault();
 
-        const profileText = document.getElementById('profile-text').value.trim();
+        const pdfFile = pdfInput.files[0];
+        const screenshotFile = screenshotInput.files[0];
         const email = document.getElementById('email').value.trim();
 
-        if (!profileText) {
-          showError('Please paste your LinkedIn profile text.');
+        if (!pdfFile) {
+          showError('Please upload your LinkedIn profile PDF.');
+          return;
+        }
+
+        if (pdfFile.size > 10 * 1024 * 1024) {
+          showError('PDF file is too large. Please upload a file under 10MB.');
+          return;
+        }
+
+        if (screenshotFile && screenshotFile.size > 10 * 1024 * 1024) {
+          showError('Screenshot file is too large. Please upload a file under 10MB.');
           return;
         }
 
         // Update button state
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="loading-spinner"></span>Analyzing...';
+        submitBtn.innerHTML = '<span class="loading-spinner"></span>Analysing your profile...';
         errorMessage.classList.remove('show');
 
         try {
-          const response = await fetch('/.netlify/functions/analyze-linkedin', {
+          // Convert files to base64
+          const pdfBase64 = await fileToBase64(pdfFile);
+          let screenshotBase64 = null;
+          if (screenshotFile) {
+            screenshotBase64 = await fileToBase64(screenshotFile);
+          }
+
+          const response = await fetch('/.netlify/functions/analyse-linkedin', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ profileText, email }),
+            body: JSON.stringify({
+              pdf: pdfBase64,
+              screenshot: screenshotBase64,
+              email: email
+            }),
           });
 
           if (!response.ok) {
@@ -604,13 +832,14 @@ About: I help B2B SaaS companies scale from $1M to $10M ARR through strategic ma
           }
 
           const data = await response.json();
-          displayResults(data);
+          displayResults(data, !!screenshotFile);
 
           // Track event
           if (typeof gtag === 'function') {
             gtag('event', 'linkedin_analysis_complete', {
               'event_category': 'engagement',
-              'event_label': 'LinkedIn Analyzer'
+              'event_label': 'LinkedIn Analyser',
+              'has_screenshot': !!screenshotFile
             });
           }
 
@@ -618,32 +847,69 @@ About: I help B2B SaaS companies scale from $1M to $10M ARR through strategic ma
           showError(error.message || 'Something went wrong. Please try again.');
         } finally {
           submitBtn.disabled = false;
-          submitBtn.innerHTML = 'Analyze My Profile';
+          submitBtn.innerHTML = 'Analyse My Profile';
         }
       });
+
+      function fileToBase64(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => {
+            // Remove the data URL prefix (e.g., "data:application/pdf;base64,")
+            const base64 = reader.result.split(',')[1];
+            resolve(base64);
+          };
+          reader.onerror = error => reject(error);
+        });
+      }
 
       function showError(message) {
         errorMessage.textContent = message;
         errorMessage.classList.add('show');
+        errorMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
 
-      function displayResults(data) {
-        // Show score
-        document.getElementById('score-number').textContent = data.score || '--';
-        document.getElementById('score-explanation').textContent = data.scoreExplanation || '';
+      function displayResults(data, hasScreenshot) {
+        // Show score from executive summary
+        const summary = data.executiveSummary || {};
+        document.getElementById('score-number').textContent = summary.score || '--';
+        document.getElementById('score-explanation').textContent = summary.verdict || '';
+
+        // Executive Summary
+        let summaryHTML = '';
+        if (summary.topStrength) {
+          summaryHTML += '<p><strong>Top Strength:</strong> ' + escapeHtml(summary.topStrength) + '</p>';
+        }
+        if (summary.criticalGap) {
+          summaryHTML += '<p><strong>Critical Gap:</strong> ' + escapeHtml(summary.criticalGap) + '</p>';
+        }
+        document.getElementById('summary-content').innerHTML = summaryHTML;
 
         // Headline analysis
         let headlineHTML = '';
         if (data.headline) {
-          headlineHTML += '<p><strong>Current:</strong> ' + escapeHtml(data.headline.current || 'Not provided') + '</p>';
-          if (data.headline.issues) {
-            headlineHTML += '<p><strong>Issues:</strong> ' + escapeHtml(data.headline.issues) + '</p>';
+          if (data.headline.current) {
+            headlineHTML += '<p><strong>Current Headline:</strong></p><div class="suggestion-box">' + escapeHtml(data.headline.current) + '</div>';
+          }
+          if (data.headline.score) {
+            headlineHTML += '<p><strong>Score:</strong> ' + data.headline.score + '/100</p>';
+          }
+          if (data.headline.issues && data.headline.issues.length > 0) {
+            headlineHTML += '<p><strong>Issues:</strong></p><ul>';
+            data.headline.issues.forEach(function(issue) {
+              headlineHTML += '<li>' + escapeHtml(issue) + '</li>';
+            });
+            headlineHTML += '</ul>';
           }
           if (data.headline.alternatives && data.headline.alternatives.length > 0) {
             headlineHTML += '<p><strong>Suggested Alternatives:</strong></p>';
             data.headline.alternatives.forEach(function(alt) {
-              headlineHTML += '<div class="alternative-headline">"' + escapeHtml(alt) + '"</div>';
+              headlineHTML += '<div class="suggestion-box">' + escapeHtml(alt) + '</div>';
             });
+          }
+          if (data.headline.reasoning) {
+            headlineHTML += '<p><strong>Why these work better:</strong> ' + escapeHtml(data.headline.reasoning) + '</p>';
           }
         }
         document.getElementById('headline-content').innerHTML = headlineHTML;
@@ -651,32 +917,117 @@ About: I help B2B SaaS companies scale from $1M to $10M ARR through strategic ma
         // About section analysis
         let aboutHTML = '';
         if (data.about) {
-          if (data.about.strengths) {
-            aboutHTML += '<p><strong>Strengths:</strong> ' + escapeHtml(data.about.strengths) + '</p>';
+          if (data.about.score) {
+            aboutHTML += '<p><strong>Score:</strong> ' + data.about.score + '/100</p>';
           }
-          if (data.about.improvements) {
-            aboutHTML += '<p><strong>Improvements:</strong> ' + escapeHtml(data.about.improvements) + '</p>';
+          if (data.about.strengths && data.about.strengths.length > 0) {
+            aboutHTML += '<p><strong>Strengths:</strong></p><ul>';
+            data.about.strengths.forEach(function(strength) {
+              aboutHTML += '<li>' + escapeHtml(strength) + '</li>';
+            });
+            aboutHTML += '</ul>';
+          }
+          if (data.about.improvements && data.about.improvements.length > 0) {
+            aboutHTML += '<p><strong>Areas to Improve:</strong></p><ul>';
+            data.about.improvements.forEach(function(improvement) {
+              aboutHTML += '<li>' + escapeHtml(improvement) + '</li>';
+            });
+            aboutHTML += '</ul>';
           }
           if (data.about.rewrite) {
-            aboutHTML += '<p><strong>Suggested Rewrite:</strong></p>';
-            aboutHTML += '<div class="alternative-headline">' + escapeHtml(data.about.rewrite) + '</div>';
+            aboutHTML += '<p><strong>Suggested Rewrite:</strong></p><div class="suggestion-box">' + escapeHtml(data.about.rewrite) + '</div>';
           }
         }
         document.getElementById('about-content').innerHTML = aboutHTML;
 
+        // Experience analysis
+        let experienceHTML = '';
+        if (data.experience) {
+          if (data.experience.score) {
+            experienceHTML += '<p><strong>Score:</strong> ' + data.experience.score + '/100</p>';
+          }
+          if (data.experience.currentRoleAnalysis) {
+            experienceHTML += '<p><strong>Current Role Analysis:</strong> ' + escapeHtml(data.experience.currentRoleAnalysis) + '</p>';
+          }
+          if (data.experience.improvements && data.experience.improvements.length > 0) {
+            experienceHTML += '<p><strong>Improvements:</strong></p><ul>';
+            data.experience.improvements.forEach(function(improvement) {
+              experienceHTML += '<li>' + escapeHtml(improvement) + '</li>';
+            });
+            experienceHTML += '</ul>';
+          }
+          if (data.experience.missingElements && data.experience.missingElements.length > 0) {
+            experienceHTML += '<p><strong>Missing Elements:</strong></p><ul>';
+            data.experience.missingElements.forEach(function(element) {
+              experienceHTML += '<li>' + escapeHtml(element) + '</li>';
+            });
+            experienceHTML += '</ul>';
+          }
+        }
+        document.getElementById('experience-content').innerHTML = experienceHTML;
+
+        // Visual analysis
+        const visualCard = document.getElementById('visual-card');
+        const visualData = data.visualAnalysis;
+        if (visualData && visualData.available) {
+          let visualHTML = '';
+          if (visualData.profilePhoto) {
+            visualHTML += '<p><strong>Profile Photo:</strong> ' + escapeHtml(visualData.profilePhoto.assessment) + '</p>';
+            if (visualData.profilePhoto.recommendation) {
+              visualHTML += '<p class="text-opacity-80"><em>Recommendation: ' + escapeHtml(visualData.profilePhoto.recommendation) + '</em></p>';
+            }
+          }
+          if (visualData.bannerImage) {
+            visualHTML += '<p><strong>Banner Image:</strong> ' + escapeHtml(visualData.bannerImage.assessment) + '</p>';
+            if (visualData.bannerImage.recommendation) {
+              visualHTML += '<p class="text-opacity-80"><em>Recommendation: ' + escapeHtml(visualData.bannerImage.recommendation) + '</em></p>';
+            }
+          }
+          if (visualData.overallPresentation) {
+            visualHTML += '<p><strong>Overall Presentation:</strong> ' + escapeHtml(visualData.overallPresentation) + '</p>';
+          }
+          if (visualData.standoutElements && visualData.standoutElements.length > 0) {
+            visualHTML += '<p><strong>Standout Elements:</strong></p><ul>';
+            visualData.standoutElements.forEach(function(element) {
+              visualHTML += '<li>' + escapeHtml(element) + '</li>';
+            });
+            visualHTML += '</ul>';
+          }
+          if (visualData.visualImprovements && visualData.visualImprovements.length > 0) {
+            visualHTML += '<p><strong>Visual Improvements:</strong></p><ul>';
+            visualData.visualImprovements.forEach(function(improvement) {
+              visualHTML += '<li>' + escapeHtml(improvement) + '</li>';
+            });
+            visualHTML += '</ul>';
+          }
+          document.getElementById('visual-content').innerHTML = visualHTML;
+          visualCard.classList.add('show');
+        } else {
+          visualCard.classList.remove('show');
+        }
+
         // Priority actions
         let actionsHTML = '';
         if (data.actions && data.actions.length > 0) {
-          data.actions.forEach(function(action) {
+          // Sort by priority
+          const sortedActions = [...data.actions].sort((a, b) => (a.priority || 99) - (b.priority || 99));
+          sortedActions.forEach(function(action) {
             const impactClass = action.impact === 'High' ? 'impact-high' : (action.impact === 'Medium' ? 'impact-medium' : 'impact-low');
             actionsHTML += '<div class="priority-action">';
             actionsHTML += '<div class="action-header">';
             actionsHTML += '<strong>' + escapeHtml(action.action) + '</strong>';
             actionsHTML += '<div>';
-            actionsHTML += '<span class="time-badge">' + escapeHtml(action.time) + '</span> ';
+            if (action.section) {
+              actionsHTML += '<span class="time-badge">' + escapeHtml(action.section) + '</span> ';
+            }
+            if (action.time) {
+              actionsHTML += '<span class="time-badge">' + escapeHtml(action.time) + '</span> ';
+            }
             actionsHTML += '<span class="impact-badge ' + impactClass + '">' + escapeHtml(action.impact) + ' Impact</span>';
             actionsHTML += '</div></div>';
-            actionsHTML += '<p class="text-opacity-80">' + escapeHtml(action.why) + '</p>';
+            if (action.why) {
+              actionsHTML += '<p class="text-opacity-80">' + escapeHtml(action.why) + '</p>';
+            }
             actionsHTML += '</div>';
           });
         }
