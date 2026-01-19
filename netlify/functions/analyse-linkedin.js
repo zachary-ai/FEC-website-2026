@@ -143,6 +143,7 @@ exports.handler = async function (event) {
     }
 
     if (!process.env.ANTHROPIC_API_KEY) {
+      console.error('ANTHROPIC_API_KEY environment variable is not set');
       return {
         statusCode: 500,
         headers: {
@@ -150,7 +151,7 @@ exports.handler = async function (event) {
           'Access-Control-Allow-Origin': '*',
         },
         body: JSON.stringify({
-          error: 'Server configuration error. Please try again later.',
+          error: 'API key not configured. Please contact support.',
         }),
       };
     }
