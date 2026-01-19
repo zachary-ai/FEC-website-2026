@@ -5,6 +5,10 @@
   publish = "."
   functions = "netlify/functions"
 
+# Install dependencies for Netlify Functions
+[[plugins]]
+  package = "@netlify/plugin-functions-install-core"
+
 # Redirect www to non-www (canonical URL)
 [[redirects]]
   from = "https://www.thefractionalexec.com.au/*"
