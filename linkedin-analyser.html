@@ -141,11 +141,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       font-weight: 500;
     }
     .instruction-box {
-      background: #f9fafb;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 8px;
       padding: 16px;
       margin-bottom: 16px;
       font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .instruction-box strong {
+      color: rgba(255, 255, 255, 0.9);
     }
     .instruction-box ol {
       margin: 8px 0 0 0;
@@ -153,6 +158,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     }
     .instruction-box li {
       margin-bottom: 4px;
+    }
+    .instruction-box a {
+      color: #fff;
+      text-decoration: underline;
     }
     .analyser-email {
       width: 100%;
