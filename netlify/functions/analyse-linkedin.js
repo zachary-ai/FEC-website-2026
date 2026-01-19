@@ -81,19 +81,6 @@ ANALYSIS FOCUS AREAS:
 4. Standing out from other fractionals in their space
 5. Demonstrating expertise through specifics, not bragging
 6. Professional visual presentation (if screenshot provided)
-7. Featured section utilisation
-8. Recommendations and social proof
-
-TIME ESTIMATES:
-- 5min: Quick text edits, minor tweaks
-- 15min: Rewriting a section
-- 30min: Strategic repositioning or research
-- 1hr: Complete overhaul of a section with research
-
-IMPACT RATINGS:
-- High: Directly affects client acquisition and first impressions
-- Medium: Improves credibility and professional perception
-- Low: Nice to have, polishing touches
 
 If no screenshot is provided, set visualAnalysis.available to false and provide general best practice recommendations instead of specific observations.
 
@@ -126,7 +113,7 @@ exports.handler = async function (event) {
   }
 
   try {
-    const { pdf, screenshot, email } = JSON.parse(event.body);
+    const { pdf, screenshot, email, turnstileToken } = JSON.parse(event.body);
 
     // Validate PDF is provided
     if (!pdf) {
@@ -152,6 +139,87 @@ exports.handler = async function (event) {
         },
         body: JSON.stringify({
           error: 'API key not configured. Please contact support.',
+        }),
+      };
+    }
+
+    if (!process.env.TURNSTILE_SECRET_KEY) {
+      console.error('TURNSTILE_SECRET_KEY environment variable is not set');
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+        body: JSON.stringify({
+          error: 'Spam protection is not configured. Please contact support.',
+        }),
+      };
+    }
+
+    if (!turnstileToken) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+        body: JSON.stringify({
+          error: 'Please complete the human verification before submitting.',
+        }),
+      };
+    }
+
+    const turnstileResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        secret: process.env.TURNSTILE_SECRET_KEY,
+        response: turnstileToken,
+        remoteip: event.headers['x-forwarded-for'] || event.headers['client-ip'] || '',
+      }),
+    });
+
+    const turnstileResult = await turnstileResponse.json();
+    if (!turnstileResult.success) {
+      console.error('Turnstile verification failed:', turnstileResult);
+      return {
+        statusCode: 403,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+        body: JSON.stringify({
+          error: 'Verification failed. Please try again.',
+        }),
+      };
+    }
+
+    const rateLimitKey = `rate:${(event.headers['x-forwarded-for'] || '').split(',')[0].trim()}`;
+    const now = Date.now();
+    const windowMs = 15 * 60 * 1000;
+    const maxRequests = 5;
+    global.rateLimitStore = global.rateLimitStore || new Map();
+    const store = global.rateLimitStore;
+    const entry = store.get(rateLimitKey) || { count: 0, start: now };
+    if (now - entry.start > windowMs) {
+      entry.count = 0;
+      entry.start = now;
+    }
+    entry.count += 1;
+    store.set(rateLimitKey, entry);
+
+    if (entry.count > maxRequests) {
+      return {
+        statusCode: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+        body: JSON.stringify({
+          error: 'Too many requests. Please wait 15 minutes and try again.',
         }),
       };
     }
@@ -210,8 +278,8 @@ Provide a comprehensive analysis following the JSON structure specified in your 
 
     // Call Claude API
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
+      model: 'claude-3-5-haiku-20240620',
+      max_tokens: 2000,
       system: SYSTEM_PROMPT,
       messages: [
         {
