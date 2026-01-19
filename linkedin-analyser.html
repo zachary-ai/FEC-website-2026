@@ -221,15 +221,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       font-weight: 700;
     }
     .result-card {
-      background: #f9fafb;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
       padding: 24px;
       margin-bottom: 20px;
+      color: rgba(255, 255, 255, 0.9);
     }
     .result-card h4 {
       margin-top: 0;
       margin-bottom: 16px;
       font-size: 18px;
+      color: #fff;
     }
     .result-card ul {
       margin: 0;
@@ -237,24 +240,31 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     }
     .result-card li {
       margin-bottom: 8px;
+      color: rgba(255, 255, 255, 0.8);
     }
     .result-card p {
       margin-bottom: 12px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    .result-card strong {
+      color: #fff;
     }
     .suggestion-box {
-      background: white;
-      border: 1px solid #e5e7eb;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 8px;
       padding: 12px;
       margin-bottom: 8px;
       white-space: pre-wrap;
+      color: rgba(255, 255, 255, 0.9);
     }
     .priority-action {
-      background: white;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 8px;
       padding: 16px;
       margin-bottom: 12px;
-      border-left: 4px solid #111;
+      border-left: 4px solid #16a34a;
     }
     .priority-action .action-header {
       display: flex;
@@ -264,8 +274,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       gap: 12px;
       flex-wrap: wrap;
     }
+    .priority-action .action-header strong {
+      color: #fff;
+    }
     .priority-action .time-badge {
-      background: #e5e7eb;
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
       padding: 4px 8px;
       border-radius: 4px;
       font-size: 12px;
@@ -276,9 +290,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       font-size: 12px;
       font-weight: 600;
     }
-    .impact-high { background: #dcfce7; color: #166534; }
-    .impact-medium { background: #fef9c3; color: #854d0e; }
-    .impact-low { background: #f3f4f6; color: #374151; }
+    .priority-action p {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .impact-high { background: #166534; color: #dcfce7; }
+    .impact-medium { background: #854d0e; color: #fef9c3; }
+    .impact-low { background: #374151; color: #f3f4f6; }
     /* Loading state */
     .loading-spinner {
       display: inline-block;
