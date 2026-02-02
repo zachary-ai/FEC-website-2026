@@ -462,7 +462,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         </svg>
                       </div>
                       <p class="upload-text"><strong>Click to upload</strong> or drag and drop</p>
-                      <p class="upload-text">PDF file only (max 10MB)</p>
+                      <p class="upload-text">PDF file only (max 5MB)</p>
                       <p class="file-name" id="pdf-file-name"></p>
                     </div>
                   </div>
@@ -490,7 +490,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         </svg>
                       </div>
                       <p class="upload-text"><strong>Click to upload</strong> or drag and drop</p>
-                      <p class="upload-text">PNG, JPG up to 10MB</p>
+                      <p class="upload-text">PNG, JPG up to 5MB</p>
                       <p class="file-name" id="screenshot-file-name"></p>
                     </div>
                   </div>
@@ -881,13 +881,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           return;
         }
 
-        if (pdfFile.size > 10 * 1024 * 1024) {
-          showError('PDF file is too large. Please upload a file under 10MB.');
+        if (pdfFile.size > 5 * 1024 * 1024) {
+          showError('PDF file is too large. Please upload a file under 5MB.');
           return;
         }
 
-        if (screenshotFile && screenshotFile.size > 10 * 1024 * 1024) {
-          showError('Screenshot file is too large. Please upload a file under 10MB.');
+        if (screenshotFile && screenshotFile.size > 5 * 1024 * 1024) {
+          showError('Screenshot file is too large. Please upload a file under 5MB.');
           return;
         }
 
