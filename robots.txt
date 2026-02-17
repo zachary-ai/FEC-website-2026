@@ -47,3 +47,7 @@ Allow: /
 
 # Sitemap location
 Sitemap: https://thefractionalexec.com.au/sitemap.xml
+
+# LLM information file
+# See https://llmstxt.org for more information
+LLMs-Txt: https://thefractionalexec.com.au/llms.txt
