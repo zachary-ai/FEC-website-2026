@@ -53,6 +53,164 @@
 # Site settings > Domain management > Bot protection > Disable
 # Or Site settings > Build & deploy > Post processing > Disable prerendering
 
+
+# SEO: Redirect .html URLs to clean URLs (301 permanent)
+[[redirects]]
+  from = "/about.html"
+  to = "/about"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/membership.html"
+  to = "/membership"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/resources.html"
+  to = "/resources"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/contact-us.html"
+  to = "/contact-us"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/newsletter.html"
+  to = "/newsletter"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/podcast.html"
+  to = "/podcast"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/tools.html"
+  to = "/tools"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/zacbot.html"
+  to = "/zacbot"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/linkedin-analyser.html"
+  to = "/linkedin-analyser"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/sign-up-thank-you.html"
+  to = "/sign-up-thank-you"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/article.html"
+  to = "/article"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/article-detail.html"
+  to = "/article-detail"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/detail_resources.html"
+  to = "/detail_resources"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/search.html"
+  to = "/search"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/401.html"
+  to = "/401"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/404.html"
+  to = "/404"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/resources/what-is-a-fractional-vp-sales.html"
+  to = "/resources/what-is-a-fractional-vp-sales"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/resources/when-should-you-hire-a-fractional-vp-sales.html"
+  to = "/resources/when-should-you-hire-a-fractional-vp-sales"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/resources/why-hire-a-fractional-cmo.html"
+  to = "/resources/why-hire-a-fractional-cmo"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/resources/why-should-you-hire-a-fractional-coo.html"
+  to = "/resources/why-should-you-hire-a-fractional-coo"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/resources/6-steps-to-becoming-a-fractional-executive.html"
+  to = "/resources/6-steps-to-becoming-a-fractional-executive"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/resources/5-reasons-to-bring-a-fractional-product-marketer-onboard-for-your-saas-startup.html"
+  to = "/resources/5-reasons-to-bring-a-fractional-product-marketer-onboard-for-your-saas-startup"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/resources/the-fractional-revolution.html"
+  to = "/resources/the-fractional-revolution"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/resources/announcing-fec-2-0.html"
+  to = "/resources/announcing-fec-2-0"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/resources/ever-wondered-how-a-fractional-exec-can-help-you.html"
+  to = "/resources/ever-wondered-how-a-fractional-exec-can-help-you"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/resources/interview-with-christelle-blanchet-aissaoui-on-building-a-co-op-of-fractional-cmos.html"
+  to = "/resources/interview-with-christelle-blanchet-aissaoui-on-building-a-co-op-of-fractional-cmos"
+  status = 301
+  force = true
+
 # Custom 404 page
 [[redirects]]
   from = "/*"
