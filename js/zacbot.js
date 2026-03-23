@@ -6,7 +6,7 @@
   'use strict';
 
   // ── Config ──────────────────────────────────────────────────
-  const API_URL = 'http://localhost:3001'; // Change to Railway URL in production
+  const API_URL = 'https://fec-website-2026-production-7dbe.up.railway.app';
   const TRIAL_LIMIT = 3;
   const MEMBERSHIP_URL = 'https://thefractionalexec.com.au/membership';
 

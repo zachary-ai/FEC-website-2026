@@ -23,8 +23,12 @@ if (!FEC_TOKEN) {
   process.exit(1);
 }
 
-// FIX [Critical]: Separate admin token for /questions dashboard
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || FEC_TOKEN; // Default to FEC_TOKEN but can be set separately
+// Separate admin token for /questions dashboard (required)
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
+if (!ADMIN_TOKEN) {
+  console.error('ADMIN_TOKEN env var is required. Exiting.');
+  process.exit(1);
+}
 
 const DAILY_REQUEST_CAP = parseInt(process.env.DAILY_REQUEST_CAP, 10) || 500;
 const RATE_LIMIT_PER_MIN = 10;

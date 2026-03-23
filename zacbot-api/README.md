@@ -33,12 +33,8 @@ Then open `http://localhost:8888/zacbot.html`
 
 ### After Railway deploy
 
-Update `js/zacbot.js` in the website root - change the API_URL:
-```javascript
-const API_URL = 'https://zacbot-api-production-xxxx.up.railway.app';
-```
-
-Then push the website changes to trigger Netlify deploy.
+API_URL is already set in `js/zacbot.js` pointing to the Railway production URL.
+Push the website changes to trigger Netlify deploy.
 
 ## Deploy website changes to Netlify
 
@@ -91,7 +87,7 @@ Returns Server-Sent Events stream:
 |---------|----------|-------------|
 | `ANTHROPIC_API_KEY` | Yes | Anthropic API key |
 | `FEC_TOKEN` | **Yes** | FEC member access token (no default, must be set) |
-| `ADMIN_TOKEN` | No | Separate token for /questions dashboard (defaults to FEC_TOKEN if not set) |
+| `ADMIN_TOKEN` | **Yes** | Separate token for /questions dashboard (must be different from FEC_TOKEN) |
 | `DAILY_REQUEST_CAP` | No | Max requests per day (default: 500) |
 | `SLACK_BOT_TOKEN` | No | Slack incoming webhook for daily summary (6pm AEST) |
 | `PORT` | No | Server port (default 3001, Railway sets automatically) |
@@ -100,12 +96,14 @@ Returns Server-Sent Events stream:
 
 | Setting | Location | Current Value |
 |---------|----------|---------------|
-| FEC access token | `js/zacbot.js` | `<your-FEC-token>` |
 | Trial question limit | `js/zacbot.js` | 3 |
+| API URL | `js/zacbot.js` | Railway production URL |
 | Rate limit | `server.js` | 10 req/min per IP |
 | Max tokens per response | `server.js` | 1000 |
 | Model | `server.js` | `claude-haiku-4-5-20251001` |
 | CORS origins | `server.js` | thefractionalexec.com.au + localhost |
+
+**Note:** FEC_TOKEN and ADMIN_TOKEN are env vars only. They are NOT in any source files.
 
 ## Knowledge Base
 
@@ -139,6 +137,5 @@ knowledge/
 
 If the unlimited access URL leaks:
 
-1. Change `FEC_TOKEN` in `js/zacbot.js`
-2. Push to Netlify
-3. Update the link in Mighty Networks
+1. Change `FEC_TOKEN` env var in Railway (redeploys automatically)
+2. Update the link in Mighty Networks with the new token
