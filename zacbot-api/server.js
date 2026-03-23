@@ -409,62 +409,55 @@ app.post('/chat', async (req, res) => {
   const streamId = ++streamIdCounter;
   let aborted = false;
 
-  // FIX [Medium]: Track stream and abort on client disconnect
-  const abortController = new AbortController();
-  activeStreams.set(streamId, abortController);
+  const stream = client.messages.stream({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 1000,
+    system: [
+      {
+        type: 'text',
+        text: SYSTEM_PROMPT,
+        cache_control: { type: 'ephemeral' }
+      }
+    ],
+    messages: messages.map(m => ({ role: m.role, content: m.content }))
+  });
 
-  req.on('close', () => {
-    aborted = true;
-    abortController.abort();
+  stream.on('text', (text) => {
+    if (!aborted) {
+      res.write(`data: ${JSON.stringify({ type: 'chunk', text })}\n\n`);
+    }
+  });
+
+  stream.on('error', (error) => {
+    if (aborted) return;
+    console.error('Stream error:', error.message || error);
+
+    const msg = error.status === 429
+      ? 'ZacBot is busy right now. Please try again in a minute.'
+      : 'ZacBot is temporarily unavailable. Please try again later.';
+
+    try {
+      res.write(`data: ${JSON.stringify({ type: 'error', error: msg })}\n\n`);
+      res.end();
+    } catch (e) { /* response already closed */ }
     activeStreams.delete(streamId);
   });
 
-  (async () => {
-    try {
-      const stream = await client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1000,
-        system: [
-          {
-            type: 'text',
-            text: SYSTEM_PROMPT,
-            cache_control: { type: 'ephemeral' }
-          }
-        ],
-        messages: messages.map(m => ({ role: m.role, content: m.content })),
-        stream: true
-      });
-
-      for await (const event of stream) {
-        if (aborted) break;
-        if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-          res.write(`data: ${JSON.stringify({ type: 'chunk', text: event.delta.text })}\n\n`);
-        }
-      }
-
-      if (!aborted) {
-        res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
-        res.end();
-      }
-
-    } catch (error) {
-      if (aborted || error.name === 'AbortError' || error.name === 'APIUserAbortError' || error.message?.includes('aborted')) {
-        return;
-      }
-      console.error('Stream error:', error.message || error);
-
-      const msg = error.status === 429
-        ? 'ZacBot is busy right now. Please try again in a minute.'
-        : 'ZacBot is temporarily unavailable. Please try again later.';
-
-      try {
-        res.write(`data: ${JSON.stringify({ type: 'error', error: msg })}\n\n`);
-        res.end();
-      } catch (e) { /* response already closed */ }
-    } finally {
-      activeStreams.delete(streamId);
+  stream.on('end', () => {
+    if (!aborted) {
+      res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+      res.end();
     }
-  })();
+    activeStreams.delete(streamId);
+  });
+
+  activeStreams.set(streamId, stream);
+
+  req.on('close', () => {
+    aborted = true;
+    try { stream.abort(); } catch (e) { /* ignore */ }
+    activeStreams.delete(streamId);
+  });
 });
 
 // ── Error handling ────────────────────────────────────────────
