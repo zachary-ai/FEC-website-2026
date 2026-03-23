@@ -433,7 +433,7 @@ app.post('/chat', async (req, res) => {
         ],
         messages: messages.map(m => ({ role: m.role, content: m.content })),
         stream: true
-      }, { signal: abortController.signal });
+      });
 
       for await (const event of stream) {
         if (aborted) break;
