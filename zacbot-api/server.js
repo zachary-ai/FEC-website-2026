@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const Anthropic = require('@anthropic-ai/sdk');
+const https = require('https');
 const { loadKnowledgeBase } = require('./lib/knowledge');
 
 const app = express();
@@ -409,82 +409,103 @@ app.post('/chat', async (req, res) => {
 
   req.on('close', () => { aborted = true; });
 
-  // Use raw fetch to Anthropic API (SDK streaming unreliable in v0.30 on Railway)
-  (async () => {
-    try {
-      const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 1000,
-          stream: true,
-          system: [
-            {
-              type: 'text',
-              text: SYSTEM_PROMPT,
-              cache_control: { type: 'ephemeral' }
-            }
-          ],
-          messages: messages.map(m => ({ role: m.role, content: m.content }))
-        })
-      });
+  // Stream from Anthropic API using Node.js https module (works on Node 18)
+  const postData = JSON.stringify({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 1000,
+    stream: true,
+    system: [
+      {
+        type: 'text',
+        text: SYSTEM_PROMPT,
+        cache_control: { type: 'ephemeral' }
+      }
+    ],
+    messages: messages.map(m => ({ role: m.role, content: m.content }))
+  });
 
-      if (!anthropicRes.ok) {
-        const errBody = await anthropicRes.text();
-        console.error('Anthropic API error:', anthropicRes.status, errBody);
-        const msg = anthropicRes.status === 429
+  const apiReq = https.request({
+    hostname: 'api.anthropic.com',
+    path: '/v1/messages',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': process.env.ANTHROPIC_API_KEY,
+      'anthropic-version': '2023-06-01',
+      'Content-Length': Buffer.byteLength(postData)
+    }
+  }, (apiRes) => {
+    if (apiRes.statusCode !== 200) {
+      let errBody = '';
+      apiRes.on('data', (chunk) => { errBody += chunk; });
+      apiRes.on('end', () => {
+        console.error('Anthropic API error:', apiRes.statusCode, errBody);
+        const msg = apiRes.statusCode === 429
           ? 'ZacBot is busy right now. Please try again in a minute.'
           : 'ZacBot is temporarily unavailable. Please try again later.';
-        res.write(`data: ${JSON.stringify({ type: 'error', error: msg })}\n\n`);
-        res.end();
-        return;
+        try {
+          res.write(`data: ${JSON.stringify({ type: 'error', error: msg })}\n\n`);
+          res.end();
+        } catch (e) { /* already closed */ }
+      });
+      return;
+    }
+
+    let buffer = '';
+
+    apiRes.on('data', (chunk) => {
+      if (aborted) return;
+      buffer += chunk.toString();
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') continue;
+
+        try {
+          const event = JSON.parse(data);
+          if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+            res.write(`data: ${JSON.stringify({ type: 'chunk', text: event.delta.text })}\n\n`);
+          }
+        } catch (e) { /* skip parse errors */ }
       }
+    });
 
-      const reader = anthropicRes.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done || aborted) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          const data = line.slice(6).trim();
-          if (data === '[DONE]') continue;
-
-          try {
-            const event = JSON.parse(data);
-            if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-              res.write(`data: ${JSON.stringify({ type: 'chunk', text: event.delta.text })}\n\n`);
-            }
-          } catch (e) { /* skip parse errors */ }
-        }
-      }
-
+    apiRes.on('end', () => {
       if (!aborted) {
         res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
         res.end();
       }
+    });
 
-    } catch (error) {
+    apiRes.on('error', (error) => {
       if (aborted) return;
-      console.error('Stream error:', error.message || error);
+      console.error('Stream read error:', error.message);
       try {
-        res.write(`data: ${JSON.stringify({ type: 'error', error: 'ZacBot is temporarily unavailable. Please try again later.' })}\n\n`);
+        res.write(`data: ${JSON.stringify({ type: 'error', error: 'ZacBot is temporarily unavailable.' })}\n\n`);
         res.end();
-      } catch (e) { /* response already closed */ }
-    }
-  })();
+      } catch (e) { /* already closed */ }
+    });
+  });
+
+  apiReq.on('error', (error) => {
+    if (aborted) return;
+    console.error('API request error:', error.message);
+    try {
+      res.write(`data: ${JSON.stringify({ type: 'error', error: 'ZacBot is temporarily unavailable.' })}\n\n`);
+      res.end();
+    } catch (e) { /* already closed */ }
+  });
+
+  req.on('close', () => {
+    aborted = true;
+    apiReq.destroy();
+  });
+
+  apiReq.write(postData);
+  apiReq.end();
 });
 
 // ── Error handling ────────────────────────────────────────────
