@@ -409,7 +409,7 @@ app.post('/chat', async (req, res) => {
 
   req.on('close', () => { aborted = true; });
 
-  // Stream from Anthropic API using Node.js https module (works on Node 18)
+  console.log('[STREAM] Starting Anthropic API call...');
   const postData = JSON.stringify({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 1000,
@@ -435,6 +435,7 @@ app.post('/chat', async (req, res) => {
       'Content-Length': Buffer.byteLength(postData)
     }
   }, (apiRes) => {
+    console.log('[STREAM] Anthropic responded with status:', apiRes.statusCode);
     if (apiRes.statusCode !== 200) {
       let errBody = '';
       apiRes.on('data', (chunk) => { errBody += chunk; });
