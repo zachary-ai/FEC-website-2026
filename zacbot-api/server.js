@@ -405,59 +405,86 @@ app.post('/chat', async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.flushHeaders();
 
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const streamId = ++streamIdCounter;
   let aborted = false;
 
-  const stream = client.messages.stream({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 1000,
-    system: [
-      {
-        type: 'text',
-        text: SYSTEM_PROMPT,
-        cache_control: { type: 'ephemeral' }
-      }
-    ],
-    messages: messages.map(m => ({ role: m.role, content: m.content }))
-  });
+  req.on('close', () => { aborted = true; });
 
-  stream.on('text', (text) => {
-    if (!aborted) {
-      res.write(`data: ${JSON.stringify({ type: 'chunk', text })}\n\n`);
-    }
-  });
-
-  stream.on('error', (error) => {
-    if (aborted) return;
-    console.error('Stream error:', error.message || error);
-
-    const msg = error.status === 429
-      ? 'ZacBot is busy right now. Please try again in a minute.'
-      : 'ZacBot is temporarily unavailable. Please try again later.';
-
+  // Use raw fetch to Anthropic API (SDK streaming unreliable in v0.30 on Railway)
+  (async () => {
     try {
-      res.write(`data: ${JSON.stringify({ type: 'error', error: msg })}\n\n`);
-      res.end();
-    } catch (e) { /* response already closed */ }
-    activeStreams.delete(streamId);
-  });
+      const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 1000,
+          stream: true,
+          system: [
+            {
+              type: 'text',
+              text: SYSTEM_PROMPT,
+              cache_control: { type: 'ephemeral' }
+            }
+          ],
+          messages: messages.map(m => ({ role: m.role, content: m.content }))
+        })
+      });
 
-  stream.on('end', () => {
-    if (!aborted) {
-      res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
-      res.end();
+      if (!anthropicRes.ok) {
+        const errBody = await anthropicRes.text();
+        console.error('Anthropic API error:', anthropicRes.status, errBody);
+        const msg = anthropicRes.status === 429
+          ? 'ZacBot is busy right now. Please try again in a minute.'
+          : 'ZacBot is temporarily unavailable. Please try again later.';
+        res.write(`data: ${JSON.stringify({ type: 'error', error: msg })}\n\n`);
+        res.end();
+        return;
+      }
+
+      const reader = anthropicRes.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done || aborted) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const data = line.slice(6).trim();
+          if (data === '[DONE]') continue;
+
+          try {
+            const event = JSON.parse(data);
+            if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+              res.write(`data: ${JSON.stringify({ type: 'chunk', text: event.delta.text })}\n\n`);
+            }
+          } catch (e) { /* skip parse errors */ }
+        }
+      }
+
+      if (!aborted) {
+        res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+        res.end();
+      }
+
+    } catch (error) {
+      if (aborted) return;
+      console.error('Stream error:', error.message || error);
+      try {
+        res.write(`data: ${JSON.stringify({ type: 'error', error: 'ZacBot is temporarily unavailable. Please try again later.' })}\n\n`);
+        res.end();
+      } catch (e) { /* response already closed */ }
     }
-    activeStreams.delete(streamId);
-  });
-
-  activeStreams.set(streamId, stream);
-
-  req.on('close', () => {
-    aborted = true;
-    try { stream.abort(); } catch (e) { /* ignore */ }
-    activeStreams.delete(streamId);
-  });
+  })();
 });
 
 // ── Error handling ────────────────────────────────────────────
