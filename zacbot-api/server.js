@@ -1,9 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const dns = require('node:dns');
 const { loadKnowledgeBase } = require('./lib/knowledge');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Railway doesn't support outbound IPv6. Prefer IPv4 when resolving API hosts.
+dns.setDefaultResultOrder('ipv4first');
 
 // Load knowledge base at startup
 let SYSTEM_PROMPT;
@@ -256,11 +260,6 @@ setInterval(() => {
   }
 }, 300000);
 
-// ── Active Streams (for cancellation) ─────────────────────────
-// FIX [Medium]: Track active streams so we can abort on client disconnect
-const activeStreams = new Map();
-let streamIdCounter = 0;
-
 // ── Routes ────────────────────────────────────────────────────
 
 // Health check (no sensitive data exposed)
@@ -412,8 +411,30 @@ app.post('/chat', async (req, res) => {
   res.flushHeaders();
 
   let aborted = false;
+  let timedOut = false;
+  const upstreamAbortController = new AbortController();
+  const upstreamTimeout = setTimeout(() => {
+    timedOut = true;
+    console.error('[STREAM] Anthropic request timed out after 65s');
+    upstreamAbortController.abort();
+  }, 65000);
 
-  req.on('close', () => { aborted = true; });
+  // Important: req.close fires as soon as Express finishes reading the POST body.
+  // For SSE cancellation we need the response-side close event instead.
+  res.on('close', () => {
+    clearTimeout(upstreamTimeout);
+    if (!res.writableEnded) {
+      aborted = true;
+      console.warn('[STREAM] Client disconnected before response finished');
+      upstreamAbortController.abort();
+    }
+  });
+
+  req.on('aborted', () => {
+    clearTimeout(upstreamTimeout);
+    aborted = true;
+    upstreamAbortController.abort();
+  });
 
   // Bypass SDK entirely - use fetch (proven to work on Railway via Slack calls)
   console.log('[STREAM] Starting Anthropic API call via fetch...');
@@ -427,6 +448,7 @@ app.post('/chat', async (req, res) => {
           'x-api-key': process.env.ANTHROPIC_API_KEY,
           'anthropic-version': '2023-06-01'
         },
+        signal: upstreamAbortController.signal,
         body: JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 1000,
@@ -482,16 +504,24 @@ app.post('/chat', async (req, res) => {
       }
 
     } catch (error) {
-      if (aborted) return;
+      clearTimeout(upstreamTimeout);
+
+      if (aborted && !timedOut) return;
+
       console.error('[STREAM] Fetch error:', error.message || error);
       try {
-        res.write(`data: ${JSON.stringify({ type: 'error', error: 'ZacBot is temporarily unavailable.' })}\n\n`);
-        res.end();
+        const errorMessage = timedOut
+          ? 'ZacBot is taking too long to respond right now. Please try again in a minute.'
+          : 'ZacBot is temporarily unavailable.';
+        if (!res.writableEnded) {
+          res.write(`data: ${JSON.stringify({ type: 'error', error: errorMessage })}\n\n`);
+          res.end();
+        }
       } catch (e) { /* already closed */ }
+    } finally {
+      clearTimeout(upstreamTimeout);
     }
   })();
-
-  req.on('close', () => { aborted = true; });
 });
 
 // ── Error handling ────────────────────────────────────────────
