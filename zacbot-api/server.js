@@ -402,6 +402,7 @@ app.post('/chat', async (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
   res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.flushHeaders();
 
@@ -421,9 +422,14 @@ app.post('/chat', async (req, res) => {
     messages: messages.map(m => ({ role: m.role, content: m.content }))
   });
 
+  let chunkCount = 0;
+
   stream.on('text', (text) => {
     if (!aborted) {
+      chunkCount++;
+      if (chunkCount <= 3) console.log(`[STREAM] Chunk ${chunkCount}: "${text.substring(0, 50)}"`);
       res.write(`data: ${JSON.stringify({ type: 'chunk', text })}\n\n`);
+      if (typeof res.flush === 'function') res.flush();
     }
   });
 
@@ -435,14 +441,16 @@ app.post('/chat', async (req, res) => {
       : 'ZacBot is temporarily unavailable. Please try again later.';
     try {
       res.write(`data: ${JSON.stringify({ type: 'error', error: msg })}\n\n`);
+      if (typeof res.flush === 'function') res.flush();
       res.end();
     } catch (e) { /* already closed */ }
   });
 
   stream.on('end', () => {
-    console.log('[STREAM] Complete');
+    console.log(`[STREAM] Complete. ${chunkCount} chunks sent.`);
     if (!aborted) {
       res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+      if (typeof res.flush === 'function') res.flush();
       res.end();
     }
   });
