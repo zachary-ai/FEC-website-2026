@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const https = require('https');
+const Anthropic = require('@anthropic-ai/sdk');
 const { loadKnowledgeBase } = require('./lib/knowledge');
 
 const app = express();
@@ -409,104 +409,48 @@ app.post('/chat', async (req, res) => {
 
   req.on('close', () => { aborted = true; });
 
+  // Use SDK .stream() method - same pattern as working LinkedIn Analyzer
+  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
   console.log('[STREAM] Starting Anthropic API call...');
-  const postData = JSON.stringify({
+
+  const stream = client.messages.stream({
     model: 'claude-haiku-4-5-20251001',
     max_tokens: 1000,
-    stream: true,
-    system: [
-      {
-        type: 'text',
-        text: SYSTEM_PROMPT,
-        cache_control: { type: 'ephemeral' }
-      }
-    ],
+    system: SYSTEM_PROMPT,
     messages: messages.map(m => ({ role: m.role, content: m.content }))
   });
 
-  const apiReq = https.request({
-    hostname: 'api.anthropic.com',
-    path: '/v1/messages',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-      'Content-Length': Buffer.byteLength(postData)
+  stream.on('text', (text) => {
+    if (!aborted) {
+      res.write(`data: ${JSON.stringify({ type: 'chunk', text })}\n\n`);
     }
-  }, (apiRes) => {
-    console.log('[STREAM] Anthropic responded with status:', apiRes.statusCode);
-    if (apiRes.statusCode !== 200) {
-      let errBody = '';
-      apiRes.on('data', (chunk) => { errBody += chunk; });
-      apiRes.on('end', () => {
-        console.error('Anthropic API error:', apiRes.statusCode, errBody);
-        const msg = apiRes.statusCode === 429
-          ? 'ZacBot is busy right now. Please try again in a minute.'
-          : 'ZacBot is temporarily unavailable. Please try again later.';
-        try {
-          res.write(`data: ${JSON.stringify({ type: 'error', error: msg })}\n\n`);
-          res.end();
-        } catch (e) { /* already closed */ }
-      });
-      return;
-    }
-
-    let buffer = '';
-
-    apiRes.on('data', (chunk) => {
-      if (aborted) return;
-      buffer += chunk.toString();
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if (data === '[DONE]') continue;
-
-        try {
-          const event = JSON.parse(data);
-          if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-            res.write(`data: ${JSON.stringify({ type: 'chunk', text: event.delta.text })}\n\n`);
-          }
-        } catch (e) { /* skip parse errors */ }
-      }
-    });
-
-    apiRes.on('end', () => {
-      if (!aborted) {
-        res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
-        res.end();
-      }
-    });
-
-    apiRes.on('error', (error) => {
-      if (aborted) return;
-      console.error('Stream read error:', error.message);
-      try {
-        res.write(`data: ${JSON.stringify({ type: 'error', error: 'ZacBot is temporarily unavailable.' })}\n\n`);
-        res.end();
-      } catch (e) { /* already closed */ }
-    });
   });
 
-  apiReq.on('error', (error) => {
+  stream.on('error', (error) => {
     if (aborted) return;
-    console.error('API request error:', error.message);
+    console.error('[STREAM] Error:', error.status, error.message || error);
+    const msg = error.status === 429
+      ? 'ZacBot is busy right now. Please try again in a minute.'
+      : 'ZacBot is temporarily unavailable. Please try again later.';
     try {
-      res.write(`data: ${JSON.stringify({ type: 'error', error: 'ZacBot is temporarily unavailable.' })}\n\n`);
+      res.write(`data: ${JSON.stringify({ type: 'error', error: msg })}\n\n`);
       res.end();
     } catch (e) { /* already closed */ }
   });
 
-  req.on('close', () => {
-    aborted = true;
-    apiReq.destroy();
+  stream.on('end', () => {
+    console.log('[STREAM] Complete');
+    if (!aborted) {
+      res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
+      res.end();
+    }
   });
 
-  apiReq.write(postData);
-  apiReq.end();
+  req.on('close', () => {
+    aborted = true;
+    try { stream.abort(); } catch (e) { /* ignore */ }
+  });
 });
 
 // ── Error handling ────────────────────────────────────────────
