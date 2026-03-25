@@ -51,6 +51,12 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '100kb' }));
 
+// Log all incoming requests
+app.use((req, res, next) => {
+  console.log(`[REQ] ${req.method} ${req.path}`);
+  next();
+});
+
 // ── IP Resolution ─────────────────────────────────────────────
 // FIX [High]: With trust proxy enabled, req.ip uses the trusted proxy chain.
 // Don't parse X-Forwarded-For manually.
@@ -259,7 +265,7 @@ let streamIdCounter = 0;
 
 // Health check (no sensitive data exposed)
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', service: 'ZacBot API' });
+  res.json({ status: 'ok', service: 'ZacBot API', version: 'fetch-v2' });
 });
 
 // FIX [Critical]: Dashboard uses separate ADMIN_TOKEN
