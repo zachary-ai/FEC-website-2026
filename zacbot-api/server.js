@@ -416,13 +416,17 @@ app.post('/chat', async (req, res) => {
   console.log('[STREAM] Starting Anthropic API call...');
 
   const stream = client.messages.stream({
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-3-5-haiku-20241022',
     max_tokens: 1000,
     system: SYSTEM_PROMPT,
     messages: messages.map(m => ({ role: m.role, content: m.content }))
   });
 
   let chunkCount = 0;
+
+  stream.on('message', (msg) => {
+    console.log('[STREAM] Message event:', msg.type, msg.stop_reason || '');
+  });
 
   stream.on('text', (text) => {
     if (!aborted) {
