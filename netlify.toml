@@ -97,6 +97,13 @@
   status = 301
   force = true
 
+# FEC members get redirected to ZacBot with token
+[[redirects]]
+  from = "/zacbot-fec"
+  to = "/zacbot?token=iFxBCIyh7znAAb7l2iBwcOgZuv4G71Mv"
+  status = 302
+  force = true
+
 [[redirects]]
   from = "/zacbot.html"
   to = "/zacbot"
