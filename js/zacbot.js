@@ -516,7 +516,8 @@
   // ── Bubble Widget ───────────────────────────────────────────
   function initBubble() {
     // Check if we're on the zacbot page (full page, not bubble)
-    if (window.location.pathname.includes('zacbot')) return;
+    var path = window.location.pathname;
+    if (path.includes('zacbot') || path === '/zb' || path === '/zb.html') return;
 
     // Create bubble button
     var bubble = document.createElement('button');

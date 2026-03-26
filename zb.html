@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <title>ZacBot</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <link href="css/normalize.css" rel="stylesheet" type="text/css">
+  <link href="css/fractionalexec.webflow.css" rel="stylesheet" type="text/css">
+  <link href="css/zacbot.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
+  <script type="text/javascript">WebFont.load({ google: { families: ["Instrument Sans:regular,500,600,700"] } });</script>
+  <link href="images/favicon.png" rel="shortcut icon" type="image/x-icon">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+    }
+    .zb-page {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background-color: #111;
+    }
+    .zb-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
+    .zb-header img {
+      height: 28px;
+      width: auto;
+    }
+    .zb-header__title {
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: white;
+    }
+    .zb-header__badge {
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--cornflower-blue, #6f80ff);
+      background: rgba(111, 128, 255, 0.12);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin-left: 0.25rem;
+    }
+    .zb-body {
+      flex: 1;
+      padding: 1.5rem;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .zb-body .zacbot-chat-container {
+      flex: 1;
+      height: 100%;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    @media (max-width: 768px) {
+      .zb-header {
+        padding: 0.75rem 1rem;
+      }
+      .zb-body {
+        padding: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="zb-page">
+    <div class="zb-header">
+      <img src="images/Icon.svg" alt="Fractional Exec">
+      <span class="zb-header__title">ZacBot</span>
+      <span class="zb-header__badge">FEC Member</span>
+    </div>
+    <div class="zb-body">
+      <div id="zacbot-app"></div>
+    </div>
+  </div>
+  <script src="js/zacbot.js" type="text/javascript"></script>
+</body>
+</html>
