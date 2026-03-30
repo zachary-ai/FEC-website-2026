@@ -55,12 +55,6 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '100kb' }));
 
-// Log all incoming requests
-app.use((req, res, next) => {
-  console.log(`[REQ] ${req.method} ${req.path}`);
-  next();
-});
-
 // ── IP Resolution ─────────────────────────────────────────────
 // FIX [High]: With trust proxy enabled, req.ip uses the trusted proxy chain.
 // Don't parse X-Forwarded-For manually.
@@ -264,7 +258,7 @@ setInterval(() => {
 
 // Health check (no sensitive data exposed)
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', service: 'ZacBot API', version: 'fetch-v2' });
+  res.json({ status: 'ok', service: 'ZacBot API' });
 });
 
 // FIX [Critical]: Dashboard uses separate ADMIN_TOKEN
@@ -425,7 +419,6 @@ app.post('/chat', async (req, res) => {
     clearTimeout(upstreamTimeout);
     if (!res.writableEnded) {
       aborted = true;
-      console.warn('[STREAM] Client disconnected before response finished');
       upstreamAbortController.abort();
     }
   });
@@ -435,9 +428,6 @@ app.post('/chat', async (req, res) => {
     aborted = true;
     upstreamAbortController.abort();
   });
-
-  // Bypass SDK entirely - use fetch (proven to work on Railway via Slack calls)
-  console.log('[STREAM] Starting Anthropic API call via fetch...');
 
   (async () => {
     try {
@@ -458,8 +448,6 @@ app.post('/chat', async (req, res) => {
         })
       });
 
-      console.log('[STREAM] Anthropic status:', anthropicRes.status);
-
       if (!anthropicRes.ok) {
         const errText = await anthropicRes.text();
         console.error('[STREAM] API error:', anthropicRes.status, errText.substring(0, 200));
@@ -471,7 +459,6 @@ app.post('/chat', async (req, res) => {
         return;
       }
 
-      let chunkCount = 0;
       let buffer = '';
 
       for await (const rawChunk of anthropicRes.body) {
@@ -489,15 +476,12 @@ app.post('/chat', async (req, res) => {
           try {
             const event = JSON.parse(data);
             if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
-              chunkCount++;
-              if (chunkCount <= 3) console.log(`[STREAM] Chunk ${chunkCount}: "${event.delta.text.substring(0, 50)}"`);
               res.write(`data: ${JSON.stringify({ type: 'chunk', text: event.delta.text })}\n\n`);
             }
           } catch (e) { /* skip parse errors */ }
         }
       }
 
-      console.log(`[STREAM] Complete. ${chunkCount} chunks sent.`);
       if (!aborted) {
         res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
         res.end();
