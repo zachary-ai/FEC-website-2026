@@ -88,6 +88,10 @@ let dailyRequestCount = 0;
 let dailyResetDate = new Date().toDateString();
 let alertSent = false;
 
+// Weekly counters (reset after weekly Slack summary fires)
+let weeklyRequestCount = 0;
+let weekStart = new Date().toISOString();
+
 function checkDailyCap() {
   const today = new Date().toDateString();
   if (today !== dailyResetDate) {
@@ -97,6 +101,7 @@ function checkDailyCap() {
     console.log('[DAILY] Counter reset for new day');
   }
   dailyRequestCount++;
+  weeklyRequestCount++;
 
   if (!alertSent && dailyRequestCount >= ALERT_THRESHOLD) {
     alertSent = true;
@@ -228,29 +233,45 @@ function slackFeedback(vote, question) {
   }
 }
 
-async function sendDailySlackSummary() {
-  const topQuestions = questionLog.slice(-50).map(q => q.question).slice(0, 10);
-  const thumbsUp = feedbackLog.filter(f => f.vote === 'up').length;
-  const thumbsDown = feedbackLog.filter(f => f.vote === 'down').length;
-  const todayLeads = leadLog.filter(l => new Date(l.timestamp).toDateString() === new Date().toDateString());
+async function sendWeeklySlackSummary() {
+  const weekStartMs = new Date(weekStart).getTime();
+  const inWindow = (ts) => new Date(ts).getTime() >= weekStartMs;
+
+  const weekQuestions = questionLog.filter(q => inWindow(q.timestamp)).map(q => q.question).slice(-10);
+  const weekFeedback = feedbackLog.filter(f => inWindow(f.timestamp));
+  const thumbsUp = weekFeedback.filter(f => f.vote === 'up').length;
+  const thumbsDown = weekFeedback.filter(f => f.vote === 'down').length;
+  const weekLeads = leadLog.filter(l => inWindow(l.timestamp));
 
   const text = [
-    `*ZacBot Daily Summary (${new Date().toLocaleDateString('en-AU')})*`,
-    `Requests: ${dailyRequestCount}/${DAILY_REQUEST_CAP}`,
-    `Leads: ${todayLeads.length}${todayLeads.length > 0 ? ' (' + todayLeads.map(l => l.email).join(', ') + ')' : ''}`,
+    `*ZacBot Weekly Summary (${new Date().toLocaleDateString('en-AU')})*`,
+    `Requests this week: ${weeklyRequestCount}`,
+    `Leads: ${weekLeads.length}${weekLeads.length > 0 ? ' (' + weekLeads.map(l => l.email).join(', ') + ')' : ''}`,
     `Feedback: ${thumbsUp} up, ${thumbsDown} down`,
-    topQuestions.length > 0 ? `\n*Recent questions:*\n${topQuestions.map((q, i) => `${i + 1}. ${q.substring(0, 100)}`).join('\n')}` : ''
+    weekQuestions.length > 0 ? `\n*Recent questions:*\n${weekQuestions.map((q, i) => `${i + 1}. ${q.substring(0, 100)}`).join('\n')}` : ''
   ].join('\n');
 
   await sendSlack(text);
-  console.log('[SLACK] Daily summary sent');
+  console.log('[SLACK] Weekly summary sent');
+
+  // Reset weekly counters
+  weeklyRequestCount = 0;
+  weekStart = new Date().toISOString();
 }
 
-// 6pm AEST (8:00 UTC)
+// Weekly: Mondays 6pm AEST (8:00 UTC). Guard against double-fire within a week.
+let lastWeeklySummaryDate = null;
 setInterval(() => {
   const now = new Date();
-  if (now.getUTCHours() === 8 && now.getUTCMinutes() < 5) {
-    sendDailySlackSummary();
+  const today = now.toDateString();
+  if (
+    now.getUTCDay() === 1 &&
+    now.getUTCHours() === 8 &&
+    now.getUTCMinutes() < 5 &&
+    lastWeeklySummaryDate !== today
+  ) {
+    lastWeeklySummaryDate = today;
+    sendWeeklySlackSummary();
   }
 }, 300000);
 
