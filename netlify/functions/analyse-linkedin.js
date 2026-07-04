@@ -278,7 +278,7 @@ Provide a comprehensive analysis following the JSON structure specified in your 
 
     // Call Claude API
     const message = await client.messages.create({
-      model: 'claude-3-5-haiku-20240620',
+      model: 'claude-haiku-4-5',
       max_tokens: 2000,
       system: SYSTEM_PROMPT,
       messages: [

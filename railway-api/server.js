@@ -154,7 +154,7 @@ app.post('/analyse', async (req, res) => {
     let fullText = '';
 
     const stream = client.messages.stream({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5',
       max_tokens: 2000,
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content }]
