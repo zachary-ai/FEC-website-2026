@@ -45,6 +45,15 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
 # Sitemap location
 Sitemap: https://thefractionalexec.com.au/sitemap.xml
 
