@@ -12,7 +12,7 @@ The community serves operators across sales, marketing, operations, and product 
 
 - Name: Zachary King
 - Website: https://www.zacharyking.com.au
-- LinkedIn: https://www.linkedin.com/in/zachary-king-au/
+- LinkedIn: https://www.linkedin.com/in/zacharyking1/
 - Role: Founder of The Fractional Exec Community; Cofounder and CEO of Works
 - Background: Former startup founder and operator who moved into fractional GTM work in 2022 and founded The Fractional Exec Community. Now also Cofounder and CEO of Works, an AI enablement company.
 
@@ -47,6 +47,14 @@ The community serves operators across sales, marketing, operations, and product 
 - 5 Reasons to Bring a Fractional Product Marketer Onboard for Your SaaS Startup: https://thefractionalexec.com.au/resources/5-reasons-to-bring-a-fractional-product-marketer-onboard-for-your-saas-startup
 - Announcing FEC 2.0: https://thefractionalexec.com.au/resources/announcing-fec-2-0
 - Building a Fractional CMO Co-op (Interview with Christelle Blanchet-Aissaoui): https://thefractionalexec.com.au/resources/interview-with-christelle-blanchet-aissaoui-on-building-a-co-op-of-fractional-cmos
+- What Is a Fractional CFO?: https://thefractionalexec.com.au/resources/what-is-a-fractional-cfo
+- How Much Does a Fractional CFO Cost in Australia?: https://thefractionalexec.com.au/resources/how-much-does-a-fractional-cfo-cost-in-australia
+- What Is a Fractional CTO?: https://thefractionalexec.com.au/resources/what-is-a-fractional-cto
+- Fractional vs Consultant vs Interim: What's the Difference?: https://thefractionalexec.com.au/resources/fractional-vs-consultant-vs-interim
+- Fractional Executive vs Full-Time Hire: The Real Cost Comparison: https://thefractionalexec.com.au/resources/fractional-executive-vs-full-time-hire-cost
+- How to Price Your Fractional Engagement: https://thefractionalexec.com.au/resources/how-to-price-your-fractional-engagement
+- Fractional Executive Tax and Structuring in Australia: https://thefractionalexec.com.au/resources/fractional-executive-tax-and-structuring-in-australia
+- Fractional Executive Glossary: 25 Terms Founders Should Know: https://thefractionalexec.com.au/resources/fractional-executive-glossary
 
 ### Tools
 - LinkedIn Profile Analyser: https://thefractionalexec.com.au/linkedin-analyser - Free AI-powered tool to optimise your LinkedIn profile for fractional executive opportunities
