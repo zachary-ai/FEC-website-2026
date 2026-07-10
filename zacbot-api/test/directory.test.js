@@ -24,12 +24,14 @@ test('search ranks exact city before interstate and C Level before Director', as
     ]
   };
 
-  const result = await directory.search('fractional CMO in Melbourne');
+  const result = await directory.search('fractional CMO in Melbourne', { limit: 2 });
 
   assert.equal(result.count, 3);
+  assert.equal(result.totalCount, 3);
+  assert.equal(result.shownCount, 2);
+  assert.equal(result.cards.length, 2);
   assert.equal(result.cards[0].name, 'Casey CMO');
   assert.equal(result.cards[1].name, 'Dani Director');
-  assert.equal(result.cards[2].name, 'Sam Sydney');
   assert.equal(Object.prototype.hasOwnProperty.call(result.cards[0], 'email'), false);
 });
 

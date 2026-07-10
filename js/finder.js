@@ -83,7 +83,10 @@
             return;
           }
 
-          statusEl.textContent = data.count + ' matching fractional exec' + (data.count === 1 ? '' : 's');
+          var totalCount = data.totalCount == null ? data.count : data.totalCount;
+          var shownCount = data.shownCount == null ? data.cards.length : data.shownCount;
+          statusEl.textContent = totalCount + ' matching fractional exec' + (totalCount === 1 ? '' : 's') +
+            (shownCount < totalCount ? '. Showing the top ' + shownCount + '.' : '');
           resultsEl.innerHTML = data.cards.map(renderCard).join('');
           ctaEl.hidden = false;
         })

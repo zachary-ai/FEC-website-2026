@@ -302,8 +302,14 @@
                   finishStream(container, false);
                   return;
                 } else if (data.type === 'directory') {
-                  messages[assistantIndex].content = data.count
-                    ? 'I found ' + data.count + ' matching fractional exec' + (data.count === 1 ? '.' : 's.')
+                  var totalCount = data.totalCount == null ? data.count : data.totalCount;
+                  var shownCount = data.shownCount == null ? (data.cards || []).length : data.shownCount;
+                  var resultSummary = 'I found ' + totalCount + ' matching fractional exec' + (totalCount === 1 ? '.' : 's.');
+                  if (shownCount < totalCount) {
+                    resultSummary += ' Showing the top ' + shownCount + '.';
+                  }
+                  messages[assistantIndex].content = totalCount
+                    ? resultSummary
                     : (data.suggestion || 'No exact matches yet.');
                   messages[assistantIndex].directory = data;
                   renderMessages(container, false);

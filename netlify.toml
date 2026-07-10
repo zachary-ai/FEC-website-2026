@@ -100,7 +100,7 @@
 # FEC members get redirected to clean chat page with token
 [[redirects]]
   from = "/zacbot-fec"
-  to = "/zb?v=20260710-scroll&token=iFxBCIyh7znAAb7l2iBwcOgZuv4G71Mv"
+  to = "/zb?v=20260710-count&token=iFxBCIyh7znAAb7l2iBwcOgZuv4G71Mv"
   status = 302
   force = true
 

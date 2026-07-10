@@ -572,6 +572,8 @@ app.post('/chat', async (req, res) => {
         writeSseEvent(res, {
           type: 'directory',
           count: result.count,
+          totalCount: result.totalCount,
+          shownCount: result.shownCount,
           cards: result.cards,
           suggestion: result.suggestion,
           degraded: result.degraded

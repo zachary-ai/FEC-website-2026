@@ -290,6 +290,8 @@ class Directory {
     if (!cleanQuery) {
       return {
         count: 0,
+        totalCount: 0,
+        shownCount: 0,
         cards: [],
         clarifyingQuestion: 'What kind of fractional executive are you looking for?',
         functions: FUNCTIONS
@@ -300,6 +302,8 @@ class Directory {
     if (!parsed.functions.length) {
       return {
         count: 0,
+        totalCount: 0,
+        shownCount: 0,
         cards: [],
         clarifyingQuestion: 'Which function do you need: marketing, sales, operations, finance, engineering, product, customer, HR, legal, design, or general management?',
         functions: FUNCTIONS
@@ -327,6 +331,8 @@ class Directory {
 
     return {
       count: scored.length,
+      totalCount: scored.length,
+      shownCount: cards.length,
       cards,
       parsed,
       suggestion: scored.length === 0 ? nearestSuggestion(snapshot.members, parsed) : null,
