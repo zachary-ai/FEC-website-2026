@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dns = require('node:dns');
 const { loadKnowledgeBase } = require('./lib/knowledge');
+const { directory, DirectoryUnavailableError } = require('./lib/directory');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -35,6 +36,10 @@ if (!ADMIN_TOKEN) {
 
 const DAILY_REQUEST_CAP = parseInt(process.env.DAILY_REQUEST_CAP, 10) || 500;
 const RATE_LIMIT_PER_MIN = 10;
+const PUBLIC_DIRECTORY_SEARCHES_PER_HOUR = parseInt(process.env.PUBLIC_DIRECTORY_SEARCHES_PER_HOUR, 10) || 10;
+const MEMBER_DIRECTORY_SEARCHES_PER_HOUR = parseInt(process.env.MEMBER_DIRECTORY_SEARCHES_PER_HOUR, 10) || 30;
+const FINDER_PUBLIC_ENABLED = process.env.FINDER_PUBLIC_ENABLED === 'true';
+const FINDER_PUBLIC_CHAT_ENABLED = process.env.FINDER_PUBLIC_CHAT_ENABLED === 'true';
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_CONVERSATION_LENGTH = 20;
 const ALERT_THRESHOLD = Math.floor(DAILY_REQUEST_CAP * 0.8);
@@ -82,6 +87,28 @@ setInterval(() => {
     if (now - entry.start > 300000) rateLimitStore.delete(ip);
   }
 }, 300000);
+
+// ── Directory Search Rate Limiting (per IP, per hour) ─────────
+const directoryRateLimitStore = new Map();
+
+function checkDirectoryRateLimit(ip, isMember) {
+  const now = Date.now();
+  const key = `${isMember ? 'member' : 'public'}:${ip}`;
+  let entry = directoryRateLimitStore.get(key) || { count: 0, start: now };
+  if (now - entry.start > 3600000) {
+    entry = { count: 0, start: now };
+  }
+  entry.count += 1;
+  directoryRateLimitStore.set(key, entry);
+  return entry.count <= (isMember ? MEMBER_DIRECTORY_SEARCHES_PER_HOUR : PUBLIC_DIRECTORY_SEARCHES_PER_HOUR);
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of directoryRateLimitStore) {
+    if (now - entry.start > 7200000) directoryRateLimitStore.delete(key);
+  }
+}, 1800000);
 
 // ── Daily Request Cap ─────────────────────────────────────────
 let dailyRequestCount = 0;
@@ -233,6 +260,35 @@ function slackFeedback(vote, question) {
   }
 }
 
+function slackDirectoryError(message) {
+  sendSlack(`*[Directory]* ${message}`);
+}
+
+directory.configure({ sendSlack });
+
+directory.loadSnapshot()
+  .then((snapshot) => {
+    if (snapshot) {
+      console.log(`[DIRECTORY] Loaded ${snapshot.memberCount || 0} members from snapshot`);
+      return;
+    }
+    if (process.env.NOTION_TOKEN) {
+      console.log('[DIRECTORY] No snapshot found; starting boot sync');
+      directory.sync()
+        .then((synced) => console.log(`[DIRECTORY] Boot sync complete: ${synced.memberCount} members`))
+        .catch((err) => {
+          console.error('[DIRECTORY] Boot sync failed:', err.message);
+          slackDirectoryError(`Boot sync failed: ${err.message}`);
+        });
+    } else {
+      console.warn('[DIRECTORY] No snapshot found and NOTION_TOKEN is not set');
+    }
+  })
+  .catch((err) => {
+    console.error('[DIRECTORY] Failed to load snapshot:', err.message);
+    slackDirectoryError(`Snapshot load failed: ${err.message}`);
+  });
+
 async function sendWeeklySlackSummary() {
   const weekStartMs = new Date(weekStart).getTime();
   const inWindow = (ts) => new Date(ts).getTime() >= weekStartMs;
@@ -347,6 +403,103 @@ app.post('/auth', (req, res) => {
   return res.json({ unlimited: false });
 });
 
+app.get('/api/directory/meta', async (req, res) => {
+  try {
+    const meta = await directory.getMeta();
+    res.json(meta);
+  } catch (err) {
+    if (err instanceof DirectoryUnavailableError) {
+      return res.status(503).json({ error: err.message });
+    }
+    console.error('[DIRECTORY] Meta failed:', err.message);
+    res.status(500).json({ error: 'Directory is temporarily unavailable.' });
+  }
+});
+
+app.post('/api/directory/sync', async (req, res) => {
+  if (req.query.token !== ADMIN_TOKEN) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const snapshot = await directory.sync();
+    res.json({
+      ok: true,
+      syncedAt: snapshot.syncedAt,
+      memberCount: snapshot.memberCount,
+      excluded: snapshot.excluded
+    });
+  } catch (err) {
+    console.error('[DIRECTORY] Sync failed:', err.message);
+    slackDirectoryError(`Sync failed: ${err.message}`);
+    res.status(500).json({ error: 'Directory sync failed. Previous snapshot is still being served if available.' });
+  }
+});
+
+app.post('/api/find', async (req, res) => {
+  const clientIP = getClientIP(req);
+  const { query, token } = req.body || {};
+  const isMember = token && token === FEC_TOKEN;
+
+  if (!isMember && !FINDER_PUBLIC_ENABLED) {
+    return res.status(403).json({ error: 'Directory search is currently available to FEC members only.' });
+  }
+
+  if (!query || typeof query !== 'string' || query.length > MAX_MESSAGE_LENGTH) {
+    return res.status(400).json({ error: `Query must be under ${MAX_MESSAGE_LENGTH} characters.` });
+  }
+
+  const cleanQuery = sanitiseInput(query);
+  if (!cleanQuery) {
+    return res.status(400).json({ error: 'Empty query.' });
+  }
+
+  if (checkPromptInjection(cleanQuery)) {
+    console.warn(`[BLOCKED] Prompt injection in directory query: "${cleanQuery.substring(0, 100)}"`);
+    return res.status(400).json({
+      error: "I can't process that request. Try rephrasing your search."
+    });
+  }
+
+  if (!checkDirectoryRateLimit(clientIP, isMember)) {
+    return res.status(429).json({ error: 'Too many searches - try again in an hour or log in as a member.' });
+  }
+
+  if (!checkDailyCap()) {
+    return res.status(503).json({ error: 'ZacBot has reached its daily limit. Please try again tomorrow.' });
+  }
+
+  logQuestion(`[finder] ${cleanQuery}`, clientIP, isMember);
+
+  try {
+    const result = await directory.search(cleanQuery);
+    res.json(result);
+  } catch (err) {
+    if (err instanceof DirectoryUnavailableError) {
+      return res.status(503).json({ error: err.message });
+    }
+    console.error('[DIRECTORY] Search failed:', err.message);
+    res.status(500).json({ error: 'Directory search is temporarily unavailable.' });
+  }
+});
+
+function isFinderIntent(text) {
+  return /\b(find|looking for|need|recommend|know)\b.{0,80}\b(fractional|cmo|cfo|coo|cto|cro|vp sales|operator|exec|executive)\b/i.test(text);
+}
+
+function writeSseHeaders(req, res) {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.flushHeaders();
+}
+
+function writeSseEvent(res, payload) {
+  res.write(`data: ${JSON.stringify(payload)}\n\n`);
+}
+
 // Chat endpoint with streaming
 app.post('/chat', async (req, res) => {
   const { messages, token } = req.body;
@@ -394,6 +547,52 @@ app.post('/chat', async (req, res) => {
     }
   }
 
+  const clientIP = getClientIP(req);
+  const lastUserMessage = messages[messages.length - 1].content;
+
+  if (isFinderIntent(lastUserMessage) && (isUnlimited || FINDER_PUBLIC_CHAT_ENABLED)) {
+    if (!checkDirectoryRateLimit(clientIP, isUnlimited)) {
+      return res.status(429).json({ error: 'Too many searches - try again in an hour or log in as a member.' });
+    }
+
+    if (!checkDailyCap()) {
+      return res.status(503).json({
+        error: 'ZacBot has reached its daily limit. Please try again tomorrow.'
+      });
+    }
+
+    logQuestion(`[finder-chat] ${lastUserMessage}`, clientIP, isUnlimited);
+    writeSseHeaders(req, res);
+
+    try {
+      const result = await directory.search(lastUserMessage);
+      if (result.clarifyingQuestion) {
+        writeSseEvent(res, { type: 'chunk', text: result.clarifyingQuestion });
+      } else {
+        writeSseEvent(res, {
+          type: 'directory',
+          count: result.count,
+          cards: result.cards,
+          suggestion: result.suggestion,
+          degraded: result.degraded
+        });
+      }
+      writeSseEvent(res, { type: 'done' });
+      res.end();
+      return;
+    } catch (err) {
+      const message = err instanceof DirectoryUnavailableError
+        ? err.message
+        : 'Directory search is temporarily unavailable.';
+      if (!(err instanceof DirectoryUnavailableError)) {
+        console.error('[DIRECTORY] Chat search failed:', err.message);
+      }
+      writeSseEvent(res, { type: 'error', error: message });
+      res.end();
+      return;
+    }
+  }
+
   // ── Check API key ───────────────────────────────────────────
   if (!process.env.ANTHROPIC_API_KEY) {
     console.error('ANTHROPIC_API_KEY not set');
@@ -401,7 +600,6 @@ app.post('/chat', async (req, res) => {
   }
 
   // ── Rate limiting (per IP) ──────────────────────────────────
-  const clientIP = getClientIP(req);
   if (!checkRateLimit(clientIP)) {
     return res.status(429).json({ error: 'Too many requests. Please wait a moment.' });
   }
@@ -414,16 +612,10 @@ app.post('/chat', async (req, res) => {
   }
 
   // ── Log question ────────────────────────────────────────────
-  const lastUserMessage = messages[messages.length - 1].content;
   logQuestion(lastUserMessage, clientIP, isUnlimited);
 
   // ── Stream response ─────────────────────────────────────────
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('X-Accel-Buffering', 'no');
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-  res.flushHeaders();
+  writeSseHeaders(req, res);
 
   let aborted = false;
   let timedOut = false;

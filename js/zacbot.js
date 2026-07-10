@@ -17,6 +17,10 @@
     'What AI tools should I use for my practice?'
   ];
 
+  const MEMBER_SUGGESTED_QUESTIONS = [
+    'Find a fractional CMO in Melbourne'
+  ];
+
   // ── State ───────────────────────────────────────────────────
   let messages = [];
   let questionCount = 0;
@@ -168,7 +172,9 @@
       return;
     }
 
-    let suggestionsHTML = SUGGESTED_QUESTIONS.map(function (q) {
+    var suggestions = isUnlimited ? MEMBER_SUGGESTED_QUESTIONS.concat(SUGGESTED_QUESTIONS) : SUGGESTED_QUESTIONS;
+
+    let suggestionsHTML = suggestions.map(function (q) {
       return '<button class="zacbot-suggestion" data-question="' + escapeHtml(q) + '">' + escapeHtml(q) + '</button>';
     }).join('');
 
@@ -295,6 +301,12 @@
                   renderMessages(container, false);
                   finishStream(container, false);
                   return;
+                } else if (data.type === 'directory') {
+                  messages[assistantIndex].content = data.count
+                    ? 'I found ' + data.count + ' matching fractional exec' + (data.count === 1 ? '.' : 's.')
+                    : (data.suggestion || 'No exact matches yet.');
+                  messages[assistantIndex].directory = data;
+                  renderMessages(container, false);
                 } else if (data.type === 'done') {
                   finishStream(container, true);
                   return;
@@ -357,7 +369,7 @@
 
       html += '<div class="zacbot-message zacbot-message--' + msg.role + '">';
       html += '<div class="zacbot-message__avatar">' + (isUser ? 'You' : 'ZB') + '</div>';
-      html += '<div class="zacbot-message__content">' + formatMessage(msg.content) + '</div>';
+      html += '<div class="zacbot-message__content">' + formatMessage(msg.content) + renderDirectoryResults(msg.directory) + '</div>';
       // Add feedback buttons on completed assistant messages (not during streaming)
       if (!isUser && msg.content && !(isLast && isStreaming)) {
         var voted = msg.feedback || '';
@@ -438,6 +450,36 @@
     return escaped;
   }
 
+  function renderDirectoryResults(directory) {
+    if (!directory || !directory.cards || !directory.cards.length) return '';
+
+    var html = '<div class="zacbot-directory-results">';
+    for (var i = 0; i < directory.cards.length; i++) {
+      html += renderDirectoryCard(directory.cards[i]);
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function renderDirectoryCard(card) {
+    var functions = Array.isArray(card.functions) ? card.functions.join(', ') : '';
+    var linkedin = card.linkedin || '';
+    var html = '<article class="zacbot-directory-card">';
+    html += '<div class="zacbot-directory-card__top">';
+    html += '<div>';
+    html += '<h4>' + escapeHtml(card.name || 'FEC member') + '</h4>';
+    html += '<p class="zacbot-directory-card__meta">' + escapeHtml([functions, card.level, card.location].filter(Boolean).join(' • ')) + '</p>';
+    html += '</div>';
+    if (linkedin) {
+      html += '<a class="zacbot-directory-card__link" href="' + escapeAttribute(linkedin) + '" target="_blank" rel="noopener">LinkedIn</a>';
+    }
+    html += '</div>';
+    if (card.blurb) html += '<p>' + escapeHtml(card.blurb) + '</p>';
+    if (card.fitNote) html += '<p class="zacbot-directory-card__fit">' + escapeHtml(card.fitNote) + '</p>';
+    html += '</article>';
+    return html;
+  }
+
   function showTrialGate(container) {
     var emailGate = container.querySelector('#zacbot-email-gate');
     var trialGate = container.querySelector('#zacbot-trial-gate');
@@ -511,6 +553,10 @@
     var div = document.createElement('div');
     div.appendChild(document.createTextNode(text));
     return div.innerHTML;
+  }
+
+  function escapeAttribute(text) {
+    return String(text || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   // ── Bubble Widget ───────────────────────────────────────────

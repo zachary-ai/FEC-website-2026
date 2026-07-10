@@ -118,6 +118,68 @@
   margin-bottom: 0.3em;
 }
 
+.zacbot-directory-results {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.zacbot-directory-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 0.9rem;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.zacbot-directory-card__top {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.zacbot-directory-card h4 {
+  margin: 0 0 0.25rem 0;
+  color: white;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.zacbot-directory-card p {
+  margin: 0.55rem 0 0 0;
+}
+
+.zacbot-directory-card__meta {
+  color: rgba(255, 255, 255, 0.56);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.zacbot-directory-card__fit {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.86rem;
+}
+
+.zacbot-directory-card__link {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0.45rem 0.7rem;
+  border-radius: 6px;
+  background: rgba(111, 128, 255, 0.18);
+  color: white;
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.zacbot-directory-card__link:hover {
+  background: rgba(111, 128, 255, 0.3);
+  color: white;
+}
+
 /* Input area */
 .zacbot-input-area {
   padding: 1rem 1.5rem;
@@ -433,6 +495,201 @@
   height: 20px;
 }
 
+/* Fractional Finder */
+.finder-page {
+  background: #090a12;
+  color: white;
+  min-height: 100vh;
+}
+
+.finder-shell {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.finder-hero {
+  padding: 96px 0 56px;
+  background: linear-gradient(180deg, rgba(69, 90, 251, 0.14), rgba(9, 10, 18, 0));
+}
+
+.finder-kicker {
+  margin: 0 0 0.75rem;
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.finder-hero h1 {
+  max-width: 760px;
+  margin: 0 0 1.4rem;
+  color: white;
+  font-size: clamp(2.4rem, 7vw, 5.5rem);
+  line-height: 0.95;
+  letter-spacing: 0;
+}
+
+.finder-search {
+  display: flex;
+  gap: 0.75rem;
+  max-width: 760px;
+}
+
+.finder-search input {
+  flex: 1;
+  min-height: 56px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  color: white;
+  padding: 0 1rem;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 1rem;
+  outline: none;
+}
+
+.finder-search input:focus {
+  border-color: var(--cornflower-blue, #6f80ff);
+}
+
+.finder-search button,
+.finder-cta a {
+  min-height: 56px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--royal-blue, #455afb);
+  color: white;
+  padding: 0 1.35rem;
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.finder-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-width: 920px;
+  margin-top: 1rem;
+}
+
+.finder-chips--muted {
+  margin-top: 0.65rem;
+}
+
+.finder-chip {
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.78);
+  padding: 0.48rem 0.78rem;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.finder-chip:hover {
+  border-color: rgba(111, 128, 255, 0.7);
+  color: white;
+}
+
+.finder-results-section {
+  padding: 0 0 96px;
+}
+
+.finder-status {
+  min-height: 28px;
+  margin-bottom: 1.25rem;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 1rem;
+}
+
+.finder-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.finder-card {
+  min-height: 230px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.055);
+  padding: 1.1rem;
+}
+
+.finder-card__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 0.9rem;
+}
+
+.finder-card h2 {
+  margin: 0 0 0.35rem;
+  color: white;
+  font-size: 1.2rem;
+  line-height: 1.25;
+}
+
+.finder-card p {
+  margin: 0.75rem 0 0;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.55;
+}
+
+.finder-card__meta {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 0.86rem;
+}
+
+.finder-card__fit {
+  font-size: 0.92rem;
+}
+
+.finder-card__link {
+  flex-shrink: 0;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.8rem;
+  border-radius: 6px;
+  background: rgba(111, 128, 255, 0.2);
+  color: white;
+  text-decoration: none;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.finder-prompt {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.finder-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 1.4rem;
+}
+
+.finder-cta h2 {
+  margin: 0 0 0.25rem;
+  color: white;
+  font-size: 1.25rem;
+}
+
+.finder-cta p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.64);
+}
+
 /* Bubble panel */
 .zacbot-panel {
   position: fixed;
@@ -507,5 +764,23 @@
   .zacbot-bubble {
     bottom: 16px;
     right: 16px;
+  }
+
+  .finder-hero {
+    padding-top: 72px;
+  }
+
+  .finder-search,
+  .finder-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .finder-results {
+    grid-template-columns: 1fr;
+  }
+
+  .finder-card__top {
+    flex-direction: column;
   }
 }

@@ -1,0 +1,629 @@
+const crypto = require('node:crypto');
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const zlib = require('node:zlib');
+
+const FUNCTIONS = [
+  'Marketing',
+  'Sales',
+  'Operations (eg COO)',
+  'Finance',
+  'Engineering (eg CTO)',
+  'Product',
+  'Customer',
+  'General Management',
+  'HR',
+  'Legal',
+  'Design'
+];
+
+const LEVEL_RANK = {
+  'C Level': 0,
+  VP: 1,
+  Director: 2,
+  Manager: 3
+};
+
+const ROLE_PATTERNS = [
+  { pattern: /\b(cmo|marketing|growth|brand|demand gen|performance)\b/i, functions: ['Marketing'] },
+  { pattern: /\b(coo|operations?|operator|ops)\b/i, functions: ['Operations (eg COO)'] },
+  { pattern: /\b(cfo|finance|financial|commercial finance)\b/i, functions: ['Finance'] },
+  { pattern: /\b(cto|engineering|engineer|technical|technology|tech)\b/i, functions: ['Engineering (eg CTO)'] },
+  { pattern: /\b(sales|revenue|cro|gtm|go[- ]?to[- ]?market|vp sales)\b/i, functions: ['Sales'] },
+  { pattern: /\b(product|cpo|product leader|product manager)\b/i, functions: ['Product'] },
+  { pattern: /\b(hr|people|talent|culture)\b/i, functions: ['HR'] },
+  { pattern: /\b(customer success|customer|cx|support)\b/i, functions: ['Customer'] },
+  { pattern: /\b(ceo|general manager|general management|managing director)\b/i, functions: ['General Management'] },
+  { pattern: /\b(legal|lawyer|counsel)\b/i, functions: ['Legal'] },
+  { pattern: /\b(design|creative|ux|ui)\b/i, functions: ['Design'] }
+];
+
+const LOCATION_PATTERNS = [
+  { key: 'melbourne', city: 'Melbourne', state: 'Victoria', country: 'Australia', region: 'APAC', terms: ['melbourne', 'vic', 'victoria'] },
+  { key: 'sydney', city: 'Sydney', state: 'NSW', country: 'Australia', region: 'APAC', terms: ['sydney', 'nsw', 'new south wales'] },
+  { key: 'brisbane', city: 'Brisbane', state: 'Queensland', country: 'Australia', region: 'APAC', terms: ['brisbane', 'qld', 'queensland', 'sunshine coast', 'gold coast'] },
+  { key: 'perth', city: 'Perth', state: 'Western Australia', country: 'Australia', region: 'APAC', terms: ['perth', 'western australia', 'wa'] },
+  { key: 'adelaide', city: 'Adelaide', state: 'South Australia', country: 'Australia', region: 'APAC', terms: ['adelaide', 'south australia', 'sa'] },
+  { key: 'canberra', city: 'Canberra', state: 'ACT', country: 'Australia', region: 'APAC', terms: ['canberra', 'act'] },
+  { key: 'australia', city: null, state: null, country: 'Australia', region: 'APAC', terms: ['australia', 'australian', 'aus'] },
+  { key: 'new-zealand', city: null, state: null, country: 'New Zealand', region: 'APAC', terms: ['new zealand', 'nz', 'auckland', 'wellington'] },
+  { key: 'apac', city: null, state: null, country: null, region: 'APAC', terms: ['apac', 'asia pacific'] },
+  { key: 'uk', city: null, state: null, country: 'United Kingdom', region: 'EU', terms: ['uk', 'united kingdom', 'london', 'england', 'britain'] },
+  { key: 'usa', city: null, state: null, country: 'United States', region: 'Americas', terms: ['usa', 'us', 'united states', 'america'] }
+];
+
+class DirectoryUnavailableError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = 'DirectoryUnavailableError';
+  }
+}
+
+class Directory {
+  constructor(options = {}) {
+    this.dataDir = options.dataDir || process.env.DIRECTORY_DATA_DIR || path.join(__dirname, '..', 'data');
+    this.snapshotPath = path.join(this.dataDir, 'members.json');
+    this.blurbCachePath = path.join(this.dataDir, 'blurbs.json');
+    const snapshotChunks = [1, 2, 3, 4]
+      .map(index => process.env[`DIRECTORY_SNAPSHOT_GZIP_BASE64_${index}`] || '')
+      .join('');
+    this.snapshotGzipBase64 = options.snapshotGzipBase64 || process.env.DIRECTORY_SNAPSHOT_GZIP_BASE64 || snapshotChunks;
+    this.notionToken = options.notionToken || process.env.NOTION_TOKEN || '';
+    this.notionDatabaseId = options.notionDatabaseId || process.env.NOTION_DATABASE_ID || '2e8752a1921080b7ad4f000bc493c86e';
+    this.notionVersion = options.notionVersion || process.env.NOTION_VERSION || '2022-06-28';
+    this.anthropicKey = options.anthropicKey || process.env.ANTHROPIC_API_KEY || '';
+    this.anthropicModel = options.anthropicModel || process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5-20251001';
+    this.fetch = options.fetch || global.fetch;
+    this.sendSlack = options.sendSlack || null;
+    this.snapshot = null;
+    this.blurbCache = {};
+  }
+
+  configure(options = {}) {
+    if (options.sendSlack) this.sendSlack = options.sendSlack;
+    if (options.fetch) this.fetch = options.fetch;
+  }
+
+  async loadSnapshot() {
+    try {
+      const raw = await fs.readFile(this.snapshotPath, 'utf8');
+      this.snapshot = JSON.parse(raw);
+      await this.loadBlurbCache();
+      return this.snapshot;
+    } catch (err) {
+      if (err.code !== 'ENOENT') throw err;
+      if (!this.snapshotGzipBase64) {
+        this.snapshot = null;
+        return null;
+      }
+
+      const compressed = Buffer.from(this.snapshotGzipBase64, 'base64');
+      const raw = zlib.gunzipSync(compressed).toString('utf8');
+      this.snapshot = JSON.parse(raw);
+      return this.snapshot;
+    }
+  }
+
+  async loadBlurbCache() {
+    try {
+      this.blurbCache = JSON.parse(await fs.readFile(this.blurbCachePath, 'utf8'));
+    } catch (err) {
+      if (err.code !== 'ENOENT') throw err;
+      this.blurbCache = {};
+    }
+  }
+
+  hasSnapshot() {
+    return Boolean(this.snapshot && Array.isArray(this.snapshot.members));
+  }
+
+  async ensureSnapshot() {
+    if (this.hasSnapshot()) return this.snapshot;
+    const loaded = await this.loadSnapshot();
+    if (loaded) return loaded;
+    throw new DirectoryUnavailableError('Directory is warming up - try again in a minute.');
+  }
+
+  async sync() {
+    if (!this.notionToken) {
+      throw new Error('NOTION_TOKEN is required for directory sync.');
+    }
+    if (!this.fetch) {
+      throw new Error('fetch is not available in this Node runtime.');
+    }
+
+    await this.loadBlurbCache();
+    const pages = await this.fetchActiveNotionPages();
+    const members = [];
+    const excluded = { optedOut: 0, test: 0, missingPublicProfile: 0, inactive: 0 };
+
+    for (const page of pages) {
+      const mapped = this.mapNotionPage(page);
+      if (!mapped) {
+        excluded.inactive += 1;
+        continue;
+      }
+      if (mapped.directoryOptOut) {
+        excluded.optedOut += 1;
+        continue;
+      }
+      if (/test/i.test(mapped.name)) {
+        excluded.test += 1;
+        continue;
+      }
+      if (!mapped.linkedin && !mapped.bio) {
+        excluded.missingPublicProfile += 1;
+        continue;
+      }
+
+      const bioHash = hashText(mapped.bio || '');
+      const blurb = await this.sanitiseBlurb(mapped.bio, mapped.name, bioHash);
+      const safeBio = stripPrivateDetails(mapped.bio);
+      members.push({
+        id: mapped.id,
+        name: mapped.name,
+        functions: mapped.functions,
+        level: mapped.level,
+        location: mapped.location,
+        region: mapped.region,
+        linkedin: mapped.linkedin,
+        blurb,
+        bioHash,
+        searchText: compactText([
+          mapped.name,
+          mapped.functions.join(' '),
+          mapped.level,
+          mapped.location,
+          mapped.region,
+          safeBio,
+          blurb
+        ].join(' '))
+      });
+    }
+
+    const snapshot = {
+      syncedAt: new Date().toISOString(),
+      source: 'notion',
+      memberCount: members.length,
+      excluded,
+      members
+    };
+
+    await fs.mkdir(this.dataDir, { recursive: true });
+    await fs.writeFile(this.snapshotPath, `${JSON.stringify(snapshot, null, 2)}\n`);
+    await fs.writeFile(this.blurbCachePath, `${JSON.stringify(this.blurbCache, null, 2)}\n`);
+    this.snapshot = snapshot;
+    return snapshot;
+  }
+
+  async fetchActiveNotionPages() {
+    const pages = [];
+    let startCursor = null;
+
+    do {
+      const body = {
+        page_size: 100,
+        filter: {
+          property: 'Status',
+          status: { equals: 'Active' }
+        }
+      };
+      if (startCursor) body.start_cursor = startCursor;
+
+      const response = await this.fetch(`https://api.notion.com/v1/databases/${this.notionDatabaseId}/query`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.notionToken}`,
+          'Content-Type': 'application/json',
+          'Notion-Version': this.notionVersion
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!response.ok) {
+        const detail = await safeResponseText(response);
+        throw new Error(`Notion sync failed (${response.status}): ${detail.substring(0, 180)}`);
+      }
+
+      const json = await response.json();
+      pages.push(...(json.results || []));
+      startCursor = json.has_more ? json.next_cursor : null;
+    } while (startCursor);
+
+    return pages;
+  }
+
+  mapNotionPage(page) {
+    const props = page.properties || {};
+    const status = plainProperty(props.Status);
+    if (status !== 'Active') return null;
+
+    const firstName = plainProperty(props['First Name']);
+    const lastName = plainProperty(props['Last Name']);
+    const name = compactText(`${firstName} ${lastName}`);
+    if (!name) return null;
+
+    const directoryValue = plainProperty(props.Directory);
+    const functions = multiSelectProperty(props.Function).filter(value => FUNCTIONS.includes(value));
+
+    return {
+      id: page.id,
+      name,
+      functions,
+      level: plainProperty(props.Level),
+      location: plainProperty(props.Location),
+      region: plainProperty(props.Region),
+      linkedin: normaliseUrl(plainProperty(props.Linkedin)),
+      bio: compactText(plainProperty(props['Elevator Pitch Bio'])),
+      directoryOptOut: /opted\s*out/i.test(directoryValue)
+    };
+  }
+
+  async sanitiseBlurb(bio, name, bioHash) {
+    if (!bio) return '';
+    if (this.blurbCache[bioHash]) return this.blurbCache[bioHash];
+
+    let blurb = '';
+    if (this.anthropicKey && this.fetch) {
+      try {
+        const prompt = [
+          'Write a clean public directory blurb for this FEC member.',
+          'Rules: 1-2 short lines, third person, no email, no phone, no rates, no private client names unless clearly public brands.',
+          `Name: ${name}`,
+          `Bio: ${bio}`
+        ].join('\n');
+        blurb = await this.callAnthropicText(prompt, 140);
+      } catch (err) {
+        await this.alert(`*[Directory]* Blurb sanitiser degraded for ${name}: ${err.message}`);
+      }
+    }
+
+    if (!blurb) blurb = fallbackBlurb(bio);
+    blurb = stripPrivateDetails(blurb);
+    this.blurbCache[bioHash] = blurb;
+    return blurb;
+  }
+
+  async search(query, options = {}) {
+    const snapshot = await this.ensureSnapshot();
+    const cleanQuery = compactText(query || '').slice(0, 500);
+    if (!cleanQuery) {
+      return {
+        count: 0,
+        cards: [],
+        clarifyingQuestion: 'What kind of fractional executive are you looking for?',
+        functions: FUNCTIONS
+      };
+    }
+
+    const parsed = await this.parseQuery(cleanQuery);
+    if (!parsed.functions.length) {
+      return {
+        count: 0,
+        cards: [],
+        clarifyingQuestion: 'Which function do you need: marketing, sales, operations, finance, engineering, product, customer, HR, legal, design, or general management?',
+        functions: FUNCTIONS
+      };
+    }
+
+    const scored = snapshot.members
+      .filter(member => member.functions.some(fn => parsed.functions.includes(fn)))
+      .map(member => ({
+        member,
+        locationTier: getLocationTier(member, parsed.location),
+        levelRank: Object.prototype.hasOwnProperty.call(LEVEL_RANK, member.level) ? LEVEL_RANK[member.level] : 9,
+        keywordScore: keywordScore(member.searchText, parsed.keywords)
+      }))
+      .sort((a, b) => (
+        a.locationTier - b.locationTier ||
+        a.levelRank - b.levelRank ||
+        b.keywordScore - a.keywordScore ||
+        a.member.name.localeCompare(b.member.name)
+      ));
+
+    const topMatches = scored.slice(0, options.limit || 10);
+    const fitNotes = await this.generateFitNotes(cleanQuery, parsed, topMatches.map(item => item.member));
+    const cards = topMatches.map((item, index) => publicCard(item.member, fitNotes[index] || fallbackFitNote(parsed, item.member)));
+
+    return {
+      count: scored.length,
+      cards,
+      parsed,
+      suggestion: scored.length === 0 ? nearestSuggestion(snapshot.members, parsed) : null,
+      degraded: fitNotes.degraded || false
+    };
+  }
+
+  async parseQuery(query) {
+    if (this.anthropicKey && this.fetch) {
+      try {
+        const prompt = [
+          'Parse this fractional executive search query into JSON only.',
+          `Allowed functions: ${FUNCTIONS.join(', ')}`,
+          'Return shape: {"functions":[],"location":null,"keywords":[]}.',
+          'Map CMO to Marketing, COO to Operations (eg COO), CFO to Finance, CTO to Engineering (eg CTO), CRO/GTM/revenue to Sales, CEO/GM to General Management.',
+          `Query: ${query}`
+        ].join('\n');
+        const raw = await this.callAnthropicText(prompt, 220);
+        const parsed = JSON.parse(raw.replace(/^```json|```$/g, '').trim());
+        return normaliseParsedQuery(query, parsed);
+      } catch (err) {
+        return fallbackParseQuery(query);
+      }
+    }
+    return fallbackParseQuery(query);
+  }
+
+  async generateFitNotes(query, parsed, members) {
+    if (!members.length) return [];
+    if (this.anthropicKey && this.fetch) {
+      try {
+        const prompt = [
+          'For each directory card, write one short fit note tied to the search query. No emails, rates, or private contact details. Return JSON array of strings only.',
+          `Query: ${query}`,
+          `Parsed: ${JSON.stringify(parsed)}`,
+          `Members: ${JSON.stringify(members.map(member => ({
+            name: member.name,
+            functions: member.functions,
+            level: member.level,
+            location: member.location,
+            blurb: member.blurb
+          })))}`
+        ].join('\n');
+        const raw = await this.callAnthropicText(prompt, 500);
+        const notes = JSON.parse(raw.replace(/^```json|```$/g, '').trim());
+        if (Array.isArray(notes)) return notes.map(note => stripPrivateDetails(String(note)).slice(0, 180));
+      } catch (err) {
+        const fallback = members.map(member => fallbackFitNote(parsed, member));
+        fallback.degraded = true;
+        return fallback;
+      }
+    }
+    return members.map(member => fallbackFitNote(parsed, member));
+  }
+
+  async callAnthropicText(prompt, maxTokens) {
+    const response = await this.fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': this.anthropicKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: this.anthropicModel,
+        max_tokens: maxTokens,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const detail = await safeResponseText(response);
+      throw new Error(`Anthropic request failed (${response.status}): ${detail.substring(0, 120)}`);
+    }
+
+    const json = await response.json();
+    return (json.content || [])
+      .filter(block => block.type === 'text')
+      .map(block => block.text)
+      .join('\n')
+      .trim();
+  }
+
+  async getMeta() {
+    const snapshot = await this.ensureSnapshot();
+    const functions = new Set();
+    const locations = new Set();
+
+    for (const member of snapshot.members) {
+      member.functions.forEach(fn => functions.add(fn));
+      const location = primaryLocationLabel(member.location);
+      if (location) locations.add(location);
+    }
+
+    return {
+      syncedAt: snapshot.syncedAt,
+      count: snapshot.memberCount,
+      functions: Array.from(functions).sort(),
+      locations: Array.from(locations).sort()
+    };
+  }
+
+  async alert(message) {
+    if (this.sendSlack) {
+      try {
+        await this.sendSlack(message);
+      } catch (err) {
+        // Slack alerts should never break directory work.
+      }
+    }
+  }
+}
+
+function fallbackParseQuery(query) {
+  const functions = new Set();
+  for (const mapping of ROLE_PATTERNS) {
+    if (mapping.pattern.test(query)) mapping.functions.forEach(fn => functions.add(fn));
+  }
+
+  const location = detectLocation(query);
+  const keywords = compactText(query)
+    .toLowerCase()
+    .split(/\W+/)
+    .filter(word => word.length > 2)
+    .filter(word => !['find', 'need', 'looking', 'fractional', 'exec', 'executive', 'for', 'with', 'near'].includes(word))
+    .slice(0, 10);
+
+  return {
+    functions: Array.from(functions),
+    location,
+    keywords
+  };
+}
+
+function normaliseParsedQuery(originalQuery, parsed) {
+  const fallback = fallbackParseQuery(originalQuery);
+  const functions = Array.isArray(parsed.functions)
+    ? parsed.functions.filter(value => FUNCTIONS.includes(value))
+    : [];
+
+  return {
+    functions: functions.length ? Array.from(new Set(functions)) : fallback.functions,
+    location: typeof parsed.location === 'string' && parsed.location.trim() ? detectLocation(parsed.location) || parsed.location.trim() : fallback.location,
+    keywords: Array.isArray(parsed.keywords) ? parsed.keywords.map(String).slice(0, 10) : fallback.keywords
+  };
+}
+
+function detectLocation(text) {
+  const lower = String(text || '').toLowerCase();
+  for (const location of LOCATION_PATTERNS) {
+    if (location.terms.some(term => containsTerm(lower, term))) {
+      return location;
+    }
+  }
+  return null;
+}
+
+function getLocationTier(member, target) {
+  if (!target) return 0;
+
+  const locationText = String(member.location || '').toLowerCase();
+  const regionText = String(member.region || '').toLowerCase();
+  const matchesAny = terms => terms.some(term => containsTerm(locationText, term));
+
+  if (target.city && matchesAny([target.city])) return 0;
+  if (target.state && matchesAny([target.state])) return 1;
+  if (target.country && matchesAny([target.country, ...(target.country === 'Australia' ? ['australia', 'aus'] : [])])) return 2;
+  if (target.region && regionText === target.region.toLowerCase()) return 3;
+
+  for (const location of LOCATION_PATTERNS) {
+    if (location.key === target.key) continue;
+    if (target.state && location.state === target.state && matchesAny(location.terms)) return 1;
+    if (target.country && location.country === target.country && matchesAny(location.terms)) return 2;
+    if (target.region && location.region === target.region && matchesAny(location.terms)) return 3;
+  }
+
+  return 4;
+}
+
+function containsTerm(text, term) {
+  const escaped = String(term || '').toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, 'i').test(text);
+}
+
+function nearestSuggestion(members, parsed) {
+  const functionMatches = members.filter(member => member.functions.some(fn => parsed.functions.includes(fn)));
+  if (parsed.location && functionMatches.length) {
+    return `No ${parsed.functions.join('/')} members matched ${parsed.location.city || parsed.location.country || parsed.location.region}; ${functionMatches.length} matched elsewhere.`;
+  }
+  return 'No exact matches yet. Try a broader function or location.';
+}
+
+function keywordScore(text, keywords) {
+  if (!keywords || !keywords.length) return 0;
+  const lower = String(text || '').toLowerCase();
+  return keywords.reduce((score, keyword) => score + (lower.includes(String(keyword).toLowerCase()) ? 1 : 0), 0);
+}
+
+function publicCard(member, fitNote) {
+  return {
+    name: member.name,
+    functions: member.functions,
+    level: member.level,
+    location: member.location,
+    blurb: member.blurb,
+    fitNote: stripPrivateDetails(fitNote || ''),
+    linkedin: member.linkedin
+  };
+}
+
+function fallbackFitNote(parsed, member) {
+  const role = parsed.functions.find(fn => member.functions.includes(fn)) || member.functions[0] || 'fractional';
+  const location = member.location ? ` in ${member.location}` : '';
+  return `${member.level || 'Experienced'} ${role} operator${location}.`;
+}
+
+function fallbackBlurb(bio) {
+  const clean = stripPrivateDetails(compactText(bio));
+  if (clean.length <= 220) return clean;
+  const sentence = clean.split(/(?<=[.!?])\s+/).find(part => part.length >= 60 && part.length <= 220);
+  return sentence || `${clean.slice(0, 217).trim()}...`;
+}
+
+function stripPrivateDetails(text) {
+  return compactText(String(text || '')
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '')
+    .replace(/\+?\d[\d\s().-]{7,}\d/g, '')
+    .replace(/\b(?:AUD|USD|GBP|EUR|\$|£|€)\s?\d[\d,.]*(?:\s?(?:\/|per)\s?(?:hour|hr|day|month|mth|week))?/gi, '')
+    .replace(/\b\d[\d,.]*\s?(?:\/|per)\s?(?:hour|hr|day|month|mth|week)\b/gi, '')
+    .replace(/\b(?:contact|email|rates?)\s*[:.]?\s*$/i, '')
+    .replace(/\s+([.,])/g, '$1'));
+}
+
+function primaryLocationLabel(location) {
+  const text = String(location || '').trim();
+  if (!text) return '';
+  const detected = detectLocation(text);
+  return detected?.city || detected?.country || text.split(',')[0].trim();
+}
+
+function plainProperty(prop) {
+  if (!prop) return '';
+  if (prop.type) {
+    if (prop.type === 'title') return richTextToPlain(prop.title);
+    if (prop.type === 'rich_text') return richTextToPlain(prop.rich_text);
+    if (prop.type === 'select') return prop.select?.name || '';
+    if (prop.type === 'status') return prop.status?.name || '';
+    if (prop.type === 'url') return prop.url || '';
+    if (prop.type === 'email') return prop.email || '';
+    if (prop.type === 'phone_number') return prop.phone_number || '';
+    if (prop.type === 'multi_select') return multiSelectProperty(prop).join(', ');
+  }
+  return '';
+}
+
+function multiSelectProperty(prop) {
+  if (!prop) return [];
+  const values = prop.type === 'multi_select' ? prop.multi_select : prop.multi_select;
+  return Array.isArray(values) ? values.map(value => value.name).filter(Boolean) : [];
+}
+
+function richTextToPlain(value) {
+  if (!Array.isArray(value)) return '';
+  return value.map(part => part.plain_text || '').join('');
+}
+
+function compactText(text) {
+  return String(text || '').replace(/\s+/g, ' ').trim();
+}
+
+function normaliseUrl(url) {
+  const clean = compactText(url);
+  if (!clean) return '';
+  if (/^https?:\/\//i.test(clean)) return clean;
+  if (/^linkedin\.com/i.test(clean) || /^www\.linkedin\.com/i.test(clean)) return `https://${clean}`;
+  return clean;
+}
+
+function hashText(text) {
+  return crypto.createHash('sha256').update(String(text || '')).digest('hex');
+}
+
+async function safeResponseText(response) {
+  try {
+    return await response.text();
+  } catch (err) {
+    return response.statusText || 'request failed';
+  }
+}
+
+const directory = new Directory();
+
+module.exports = {
+  Directory,
+  DirectoryUnavailableError,
+  FUNCTIONS,
+  fallbackParseQuery,
+  getLocationTier,
+  directory
+};

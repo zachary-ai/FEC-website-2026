@@ -117,6 +117,12 @@
   force = true
 
 [[redirects]]
+  from = "/find.html"
+  to = "/find"
+  status = 301
+  force = true
+
+[[redirects]]
   from = "/linkedin-analyser.html"
   to = "/linkedin-analyser"
   status = 301

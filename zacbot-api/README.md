@@ -65,6 +65,9 @@ The token gives unlimited access. Without it, visitors get 3 free questions.
 | POST | `/lead` | Email capture from trial gate |
 | POST | `/feedback` | Thumbs up/down on responses |
 | GET | `/questions?token=...` | View questions, leads, feedback (protected) |
+| POST | `/api/find` | Fractional Finder search |
+| GET | `/api/directory/meta` | Public directory filter metadata |
+| POST | `/api/directory/sync?token=...` | Admin-only Notion snapshot sync |
 
 ### POST /chat
 
@@ -91,6 +94,32 @@ Returns Server-Sent Events stream:
 | `DAILY_REQUEST_CAP` | No | Max requests per day (default: 500) |
 | `SLACK_BOT_TOKEN` | No | Slack incoming webhook for daily summary (6pm AEST) |
 | `PORT` | No | Server port (default 3001, Railway sets automatically) |
+| `NOTION_TOKEN` | Phase 1 sync | Dedicated Notion integration token scoped to FEC Applications DB |
+| `NOTION_DATABASE_ID` | No | FEC Applications DB ID (defaults to PRD value) |
+| `DIRECTORY_SNAPSHOT_GZIP_BASE64_1..4` | Railway fallback | Ordered chunks of a compressed directory snapshot when direct Notion sync is unavailable |
+| `FINDER_PUBLIC_ENABLED` | No | Set `true` only after the public consent window |
+| `FINDER_PUBLIC_CHAT_ENABLED` | No | Set `true` to let public ZacBot chats call the finder |
+| `PUBLIC_DIRECTORY_SEARCHES_PER_HOUR` | No | Public search rate limit (default: 10/IP/hr) |
+| `MEMBER_DIRECTORY_SEARCHES_PER_HOUR` | No | Member search rate limit (default: 30/IP/hr) |
+
+## Fractional Finder
+
+The finder reads a local snapshot at `data/members.json`; this directory is gitignored because it contains member profile data. Sync it from Notion with:
+
+```bash
+curl -X POST "https://YOUR-RAILWAY-URL/api/directory/sync?token=$ADMIN_TOKEN"
+```
+
+Snapshot rules:
+- Only Notion `Status = Active` records are included.
+- `Directory = Opted out`, test records, and records missing both LinkedIn and bio are excluded.
+- Email is never written to the snapshot and never returned by `/api/find`.
+- Blurbs are sanitized at sync time and cached by bio hash in `data/blurbs.json`.
+
+Phase flags:
+- Phase 1 member mode works with the existing ZacBot `token`/`FEC_TOKEN`.
+- Phase 2 public `/find` requires `FINDER_PUBLIC_ENABLED=true`.
+- Public finder intent inside ZacBot chat additionally requires `FINDER_PUBLIC_CHAT_ENABLED=true`.
 
 ### Hardcoded config (in code)
 
