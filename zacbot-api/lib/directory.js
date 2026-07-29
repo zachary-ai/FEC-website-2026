@@ -153,6 +153,17 @@ class Directory {
     const previousMembersById = new Map(
       this.hasSnapshot() ? this.snapshot.members.map(member => [member.id, member]) : []
     );
+    const previousMembersByLinkedin = new Map(
+      this.hasSnapshot()
+        ? this.snapshot.members.filter(member => member.linkedin).map(member => [normaliseUrl(member.linkedin), member])
+        : []
+    );
+    const previousMembersByName = new Map(
+      this.hasSnapshot()
+        ? this.snapshot.members.filter(member => member.name).map(member => [member.name.toLowerCase(), member])
+        : []
+    );
+    const snapshotSyncedAtMs = Date.parse(this.snapshot?.syncedAt || '');
 
     for (const page of pages) {
       const mapped = this.mapNotionPage(page);
@@ -175,15 +186,29 @@ class Directory {
 
       const bioHash = hashText(mapped.bio || '');
       const safeBio = stripPrivateDetails(mapped.bio);
-      const previous = previousMembersById.get(mapped.id);
+      const previous = (
+        previousMembersById.get(mapped.id) ||
+        previousMembersByLinkedin.get(mapped.linkedin) ||
+        previousMembersByName.get(mapped.name.toLowerCase())
+      );
+      const pageEditedAtMs = Date.parse(page.last_edited_time || '');
+      const unchangedSinceSnapshot = (
+        previous &&
+        !previous.bioHash &&
+        Number.isFinite(snapshotSyncedAtMs) &&
+        Number.isFinite(pageEditedAtMs) &&
+        pageEditedAtMs <= snapshotSyncedAtMs
+      );
       // The July 10 Railway snapshot predates populated bio hashes. Its
-      // searchText still contains the sanitized bio, which lets us migrate
-      // unchanged blurbs without masking a genuinely edited profile.
+      // Notion edit time lets us migrate unchanged blurbs without masking a
+      // genuinely edited profile. The text check also supports newer bundles.
       if (
         !this.blurbCache[bioHash] &&
         previous?.blurb &&
-        safeBio &&
-        previous.searchText?.includes(safeBio)
+        (
+          unchangedSinceSnapshot ||
+          (safeBio && previous.searchText?.includes(safeBio))
+        )
       ) {
         this.blurbCache[bioHash] = previous.blurb;
       }

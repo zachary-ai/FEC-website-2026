@@ -195,9 +195,10 @@ function member(name, level, location) {
   };
 }
 
-function notionPage({ firstName, lastName, directory, linkedin, bio }) {
+function notionPage({ firstName, lastName, directory, linkedin, bio, lastEdited = '2026-07-01T00:00:00.000Z' }) {
   return {
     id: `${firstName}-${lastName}`,
+    last_edited_time: lastEdited,
     properties: {
       'First Name': { type: 'title', title: [{ plain_text: firstName }] },
       'Last Name': { type: 'rich_text', rich_text: [{ plain_text: lastName }] },
