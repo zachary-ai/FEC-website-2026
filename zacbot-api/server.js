@@ -40,6 +40,10 @@ const PUBLIC_DIRECTORY_SEARCHES_PER_HOUR = parseInt(process.env.PUBLIC_DIRECTORY
 const MEMBER_DIRECTORY_SEARCHES_PER_HOUR = parseInt(process.env.MEMBER_DIRECTORY_SEARCHES_PER_HOUR, 10) || 30;
 const FINDER_PUBLIC_ENABLED = process.env.FINDER_PUBLIC_ENABLED === 'true';
 const FINDER_PUBLIC_CHAT_ENABLED = process.env.FINDER_PUBLIC_CHAT_ENABLED === 'true';
+const DIRECTORY_SYNC_INTERVAL_MS = Math.max(
+  60000,
+  parseInt(process.env.DIRECTORY_SYNC_INTERVAL_MS, 10) || 24 * 60 * 60 * 1000
+);
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_CONVERSATION_LENGTH = 20;
 const ALERT_THRESHOLD = Math.floor(DAILY_REQUEST_CAP * 0.8);
@@ -266,28 +270,42 @@ function slackDirectoryError(message) {
 
 directory.configure({ sendSlack });
 
+async function refreshDirectoryFromNotion(reason) {
+  try {
+    const synced = await directory.sync();
+    console.log(`[DIRECTORY] ${reason} sync complete: ${synced.memberCount} members`);
+  } catch (err) {
+    console.error(`[DIRECTORY] ${reason} sync failed:`, err.message);
+    slackDirectoryError(`${reason} sync failed: ${err.message}`);
+  }
+}
+
 directory.loadSnapshot()
-  .then((snapshot) => {
+  .then(async (snapshot) => {
     if (snapshot) {
       console.log(`[DIRECTORY] Loaded ${snapshot.memberCount || 0} members from snapshot`);
-      return;
-    }
-    if (process.env.NOTION_TOKEN) {
-      console.log('[DIRECTORY] No snapshot found; starting boot sync');
-      directory.sync()
-        .then((synced) => console.log(`[DIRECTORY] Boot sync complete: ${synced.memberCount} members`))
-        .catch((err) => {
-          console.error('[DIRECTORY] Boot sync failed:', err.message);
-          slackDirectoryError(`Boot sync failed: ${err.message}`);
-        });
     } else {
-      console.warn('[DIRECTORY] No snapshot found and NOTION_TOKEN is not set');
+      console.warn('[DIRECTORY] No snapshot found');
+    }
+
+    if (process.env.NOTION_TOKEN) {
+      await refreshDirectoryFromNotion('Boot');
+    } else {
+      console.warn('[DIRECTORY] NOTION_TOKEN is not set; serving the fallback snapshot only');
     }
   })
   .catch((err) => {
     console.error('[DIRECTORY] Failed to load snapshot:', err.message);
     slackDirectoryError(`Snapshot load failed: ${err.message}`);
   });
+
+if (process.env.NOTION_TOKEN) {
+  const directorySyncTimer = setInterval(
+    () => refreshDirectoryFromNotion('Scheduled'),
+    DIRECTORY_SYNC_INTERVAL_MS
+  );
+  directorySyncTimer.unref();
+}
 
 async function sendWeeklySlackSummary() {
   const weekStartMs = new Date(weekStart).getTime();
@@ -576,6 +594,8 @@ app.post('/chat', async (req, res) => {
           shownCount: result.shownCount,
           cards: result.cards,
           suggestion: result.suggestion,
+          broaderCount: result.broaderCount,
+          broaderSuggestion: result.broaderSuggestion,
           degraded: result.degraded
         });
       }

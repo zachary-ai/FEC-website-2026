@@ -12,7 +12,7 @@ test('fallback parser maps common executive roles to exact function values', () 
   assert.deepEqual(fallbackParseQuery('looking for a CTO').functions, ['Engineering (eg CTO)']);
 });
 
-test('search ranks exact city before interstate and C Level before Director', async () => {
+test('search treats an explicit city as a hard filter and ranks C Level first', async () => {
   const directory = new Directory({ anthropicKey: '' });
   directory.snapshot = {
     syncedAt: new Date().toISOString(),
@@ -24,15 +24,53 @@ test('search ranks exact city before interstate and C Level before Director', as
     ]
   };
 
-  const result = await directory.search('fractional CMO in Melbourne', { limit: 2 });
+  const result = await directory.search('fractional CMO in Melbourne', { limit: 10 });
 
-  assert.equal(result.count, 3);
-  assert.equal(result.totalCount, 3);
+  assert.equal(result.count, 2);
+  assert.equal(result.totalCount, 2);
   assert.equal(result.shownCount, 2);
   assert.equal(result.cards.length, 2);
   assert.equal(result.cards[0].name, 'Casey CMO');
   assert.equal(result.cards[1].name, 'Dani Director');
+  assert.equal(result.broaderCount, 1);
+  assert.match(result.broaderSuggestion, /1 additional Marketing member.*outside Melbourne/i);
+  assert.equal(result.cards.some(card => card.name === 'Sam Sydney'), false);
   assert.equal(Object.prototype.hasOwnProperty.call(result.cards[0], 'email'), false);
+});
+
+test('search returns no cards when a city has no exact matches and offers broader results', async () => {
+  const directory = new Directory({ anthropicKey: '' });
+  directory.snapshot = {
+    syncedAt: new Date().toISOString(),
+    memberCount: 1,
+    members: [member('Sam Sydney', 'C Level', 'Sydney, NSW')]
+  };
+
+  const result = await directory.search('fractional CMO in Melbourne');
+
+  assert.equal(result.count, 0);
+  assert.equal(result.cards.length, 0);
+  assert.equal(result.broaderCount, 1);
+  assert.match(result.suggestion, /No Marketing members matched Melbourne/i);
+  assert.match(result.broaderSuggestion, /without a location/i);
+});
+
+test('fit notes are grounded in structured member data', async () => {
+  const directory = new Directory({
+    anthropicKey: 'unused-for-fit-notes',
+    fetch: async () => {
+      throw new Error('fit notes must not call the model');
+    }
+  });
+  directory.snapshot = {
+    syncedAt: new Date().toISOString(),
+    memberCount: 1,
+    members: [member('Casey CMO', 'C Level', 'Melbourne, VIC')]
+  };
+
+  const result = await directory.search('fractional CMO in Melbourne');
+
+  assert.equal(result.cards[0].fitNote, 'C Level Marketing operator in Melbourne, VIC.');
 });
 
 test('loads a compressed snapshot from the Railway environment fallback', async () => {

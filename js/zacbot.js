@@ -308,6 +308,9 @@
                   if (shownCount < totalCount) {
                     resultSummary += ' Showing the top ' + shownCount + '.';
                   }
+                  if (data.broaderSuggestion) {
+                    resultSummary += ' ' + data.broaderSuggestion;
+                  }
                   messages[assistantIndex].content = totalCount
                     ? resultSummary
                     : (data.suggestion || 'No exact matches yet.');

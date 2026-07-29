@@ -96,6 +96,7 @@ Returns Server-Sent Events stream:
 | `PORT` | No | Server port (default 3001, Railway sets automatically) |
 | `NOTION_TOKEN` | Phase 1 sync | Dedicated Notion integration token scoped to FEC Applications DB |
 | `NOTION_DATABASE_ID` | No | FEC Applications DB ID (defaults to PRD value) |
+| `DIRECTORY_SYNC_INTERVAL_MS` | No | Notion refresh interval when `NOTION_TOKEN` is set (default: 24 hours; minimum: 60 seconds) |
 | `DIRECTORY_SNAPSHOT_GZIP_BASE64_1..4` | Railway fallback | Ordered chunks of a compressed directory snapshot when direct Notion sync is unavailable |
 | `FINDER_PUBLIC_ENABLED` | No | Set `true` only after the public consent window |
 | `FINDER_PUBLIC_CHAT_ENABLED` | No | Set `true` to let public ZacBot chats call the finder |
@@ -109,6 +110,8 @@ The finder reads a local snapshot at `data/members.json`; this directory is giti
 ```bash
 curl -X POST "https://YOUR-RAILWAY-URL/api/directory/sync?token=$ADMIN_TOKEN"
 ```
+
+When `NOTION_TOKEN` is configured, ZacBot refreshes from Notion on every boot and then every 24 hours. The embedded snapshot is retained only as an availability fallback.
 
 Snapshot rules:
 - Only Notion `Status = Active` records are included.

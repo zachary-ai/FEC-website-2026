@@ -310,8 +310,12 @@ class Directory {
       };
     }
 
-    const scored = snapshot.members
-      .filter(member => member.functions.some(fn => parsed.functions.includes(fn)))
+    const functionMatches = snapshot.members
+      .filter(member => member.functions.some(fn => parsed.functions.includes(fn)));
+    const locationMatches = parsed.location
+      ? functionMatches.filter(member => matchesLocationScope(member, parsed.location))
+      : functionMatches;
+    const scored = locationMatches
       .map(member => ({
         member,
         locationTier: getLocationTier(member, parsed.location),
@@ -326,8 +330,8 @@ class Directory {
       ));
 
     const topMatches = scored.slice(0, options.limit || 10);
-    const fitNotes = await this.generateFitNotes(cleanQuery, parsed, topMatches.map(item => item.member));
-    const cards = topMatches.map((item, index) => publicCard(item.member, fitNotes[index] || fallbackFitNote(parsed, item.member)));
+    const cards = topMatches.map(item => publicCard(item.member, fallbackFitNote(parsed, item.member)));
+    const broaderCount = Math.max(0, functionMatches.length - scored.length);
 
     return {
       count: scored.length,
@@ -336,7 +340,11 @@ class Directory {
       cards,
       parsed,
       suggestion: scored.length === 0 ? nearestSuggestion(snapshot.members, parsed) : null,
-      degraded: fitNotes.degraded || false
+      broaderCount,
+      broaderSuggestion: parsed.location && broaderCount > 0
+        ? `${broaderCount} additional ${parsed.functions.join('/')} member${broaderCount === 1 ? '' : 's'} are available outside ${locationLabel(parsed.location)}. Run the search again without a location to see them.`
+        : null,
+      degraded: false
     };
   }
 
@@ -358,34 +366,6 @@ class Directory {
       }
     }
     return fallbackParseQuery(query);
-  }
-
-  async generateFitNotes(query, parsed, members) {
-    if (!members.length) return [];
-    if (this.anthropicKey && this.fetch) {
-      try {
-        const prompt = [
-          'For each directory card, write one short fit note tied to the search query. No emails, rates, or private contact details. Return JSON array of strings only.',
-          `Query: ${query}`,
-          `Parsed: ${JSON.stringify(parsed)}`,
-          `Members: ${JSON.stringify(members.map(member => ({
-            name: member.name,
-            functions: member.functions,
-            level: member.level,
-            location: member.location,
-            blurb: member.blurb
-          })))}`
-        ].join('\n');
-        const raw = await this.callAnthropicText(prompt, 500);
-        const notes = JSON.parse(raw.replace(/^```json|```$/g, '').trim());
-        if (Array.isArray(notes)) return notes.map(note => stripPrivateDetails(String(note)).slice(0, 180));
-      } catch (err) {
-        const fallback = members.map(member => fallbackFitNote(parsed, member));
-        fallback.degraded = true;
-        return fallback;
-      }
-    }
-    return members.map(member => fallbackFitNote(parsed, member));
   }
 
   async callAnthropicText(prompt, maxTokens) {
@@ -510,6 +490,21 @@ function getLocationTier(member, target) {
   }
 
   return 4;
+}
+
+function matchesLocationScope(member, target) {
+  if (!target || typeof target !== 'object') return true;
+  const tier = getLocationTier(member, target);
+
+  if (target.city) return tier === 0;
+  if (target.state) return tier <= 1;
+  if (target.country) return tier <= 2;
+  if (target.region) return tier <= 3;
+  return true;
+}
+
+function locationLabel(target) {
+  return target?.city || target?.state || target?.country || target?.region || 'the requested location';
 }
 
 function containsTerm(text, term) {

@@ -86,7 +86,8 @@
           var totalCount = data.totalCount == null ? data.count : data.totalCount;
           var shownCount = data.shownCount == null ? data.cards.length : data.shownCount;
           statusEl.textContent = totalCount + ' matching fractional exec' + (totalCount === 1 ? '' : 's') +
-            (shownCount < totalCount ? '. Showing the top ' + shownCount + '.' : '');
+            (shownCount < totalCount ? '. Showing the top ' + shownCount + '.' : '') +
+            (data.broaderSuggestion ? ' ' + data.broaderSuggestion : '');
           resultsEl.innerHTML = data.cards.map(renderCard).join('');
           ctaEl.hidden = false;
         })
