@@ -69,8 +69,12 @@ class Directory {
       .join('');
     this.snapshotGzipBase64 = options.snapshotGzipBase64 || process.env.DIRECTORY_SNAPSHOT_GZIP_BASE64 || snapshotChunks;
     this.notionToken = options.notionToken || process.env.NOTION_TOKEN || '';
-    this.notionDatabaseId = options.notionDatabaseId || process.env.NOTION_DATABASE_ID || '2e8752a1921080b7ad4f000bc493c86e';
-    this.notionVersion = options.notionVersion || process.env.NOTION_VERSION || '2022-06-28';
+    this.notionDataSourceId = options.notionDataSourceId
+      || options.notionDatabaseId
+      || process.env.NOTION_DATA_SOURCE_ID
+      || process.env.NOTION_DATABASE_ID
+      || '2e8752a1921080b7ad4f000bc493c86e';
+    this.notionVersion = options.notionVersion || process.env.NOTION_VERSION || '2025-09-03';
     this.anthropicKey = options.anthropicKey || process.env.ANTHROPIC_API_KEY || '';
     this.anthropicModel = options.anthropicModel || process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5-20251001';
     this.fetch = options.fetch || global.fetch;
@@ -210,7 +214,7 @@ class Directory {
       };
       if (startCursor) body.start_cursor = startCursor;
 
-      const response = await this.fetch(`https://api.notion.com/v1/databases/${this.notionDatabaseId}/query`, {
+      const response = await this.fetch(`https://api.notion.com/v1/data_sources/${this.notionDataSourceId}/query`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${this.notionToken}`,

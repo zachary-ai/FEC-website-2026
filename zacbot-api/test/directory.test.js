@@ -91,28 +91,32 @@ test('loads a compressed snapshot from the Railway environment fallback', async 
 
 test('sync strips email/rates and excludes opt-out, test, and non-public records', async () => {
   const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'fec-directory-'));
+  let notionRequest;
   const directory = new Directory({
     dataDir,
     notionToken: 'notion-secret',
     anthropicKey: '',
-    fetch: async () => ({
-      ok: true,
-      json: async () => ({
-        has_more: false,
-        results: [
-          notionPage({
-            firstName: 'Alex',
-            lastName: 'Active',
-            directory: '',
-            linkedin: 'linkedin.com/in/alex',
-            bio: 'Growth leader. Contact alex@example.com. Rates $2,000/day.'
-          }),
-          notionPage({ firstName: 'Olivia', lastName: 'Optout', directory: 'Opted out', linkedin: 'https://linkedin.com/in/olivia', bio: 'Finance leader.' }),
-          notionPage({ firstName: 'Zac', lastName: 'Sequence Test', directory: '', linkedin: 'https://linkedin.com/in/test', bio: 'Test record.' }),
-          notionPage({ firstName: 'No', lastName: 'Public', directory: '', linkedin: '', bio: '' })
-        ]
-      })
-    })
+    fetch: async (url, options) => {
+      notionRequest = { url, options };
+      return {
+        ok: true,
+        json: async () => ({
+          has_more: false,
+          results: [
+            notionPage({
+              firstName: 'Alex',
+              lastName: 'Active',
+              directory: '',
+              linkedin: 'linkedin.com/in/alex',
+              bio: 'Growth leader. Contact alex@example.com. Rates $2,000/day.'
+            }),
+            notionPage({ firstName: 'Olivia', lastName: 'Optout', directory: 'Opted out', linkedin: 'https://linkedin.com/in/olivia', bio: 'Finance leader.' }),
+            notionPage({ firstName: 'Zac', lastName: 'Sequence Test', directory: '', linkedin: 'https://linkedin.com/in/test', bio: 'Test record.' }),
+            notionPage({ firstName: 'No', lastName: 'Public', directory: '', linkedin: '', bio: '' })
+          ]
+        })
+      };
+    }
   });
 
   const snapshot = await directory.sync();
@@ -127,6 +131,8 @@ test('sync strips email/rates and excludes opt-out, test, and non-public records
   assert.equal(snapshot.excluded.optedOut, 1);
   assert.equal(snapshot.excluded.test, 1);
   assert.equal(snapshot.excluded.missingPublicProfile, 1);
+  assert.equal(notionRequest.url, 'https://api.notion.com/v1/data_sources/2e8752a1921080b7ad4f000bc493c86e/query');
+  assert.equal(notionRequest.options.headers['Notion-Version'], '2025-09-03');
 });
 
 function member(name, level, location) {
