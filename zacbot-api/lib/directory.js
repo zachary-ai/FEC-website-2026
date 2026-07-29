@@ -150,6 +150,9 @@ class Directory {
     const pages = await this.fetchActiveNotionPages();
     const members = [];
     const excluded = { optedOut: 0, test: 0, missingPublicProfile: 0, inactive: 0 };
+    const previousMembersById = new Map(
+      this.hasSnapshot() ? this.snapshot.members.map(member => [member.id, member]) : []
+    );
 
     for (const page of pages) {
       const mapped = this.mapNotionPage(page);
@@ -171,8 +174,20 @@ class Directory {
       }
 
       const bioHash = hashText(mapped.bio || '');
-      const blurb = await this.sanitiseBlurb(mapped.bio, mapped.name, bioHash);
       const safeBio = stripPrivateDetails(mapped.bio);
+      const previous = previousMembersById.get(mapped.id);
+      // The July 10 Railway snapshot predates populated bio hashes. Its
+      // searchText still contains the sanitized bio, which lets us migrate
+      // unchanged blurbs without masking a genuinely edited profile.
+      if (
+        !this.blurbCache[bioHash] &&
+        previous?.blurb &&
+        safeBio &&
+        previous.searchText?.includes(safeBio)
+      ) {
+        this.blurbCache[bioHash] = previous.blurb;
+      }
+      const blurb = await this.sanitiseBlurb(mapped.bio, mapped.name, bioHash);
       members.push({
         id: mapped.id,
         name: mapped.name,

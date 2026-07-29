@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const crypto = require('node:crypto');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
@@ -139,7 +138,6 @@ test('sync strips email/rates and excludes opt-out, test, and non-public records
 test('sync reuses a bundled snapshot blurb for an unchanged profile', async () => {
   const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'fec-directory-'));
   const bio = 'Growth leader for B2B companies.';
-  const bioHash = crypto.createHash('sha256').update(bio).digest('hex');
   let requestCount = 0;
   const directory = new Directory({
     dataDir,
@@ -170,7 +168,9 @@ test('sync reuses a bundled snapshot blurb for an unchanged profile', async () =
     memberCount: 1,
     members: [{
       ...member('Alex Active', 'C Level', 'Melbourne, VIC'),
-      bioHash,
+      id: 'Alex-Active',
+      bioHash: '',
+      searchText: `Alex Active Marketing C Level Melbourne VIC APAC ${bio} Existing grounded blurb.`,
       blurb: 'Existing grounded blurb.'
     }]
   };
