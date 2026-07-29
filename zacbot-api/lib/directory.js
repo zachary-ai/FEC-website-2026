@@ -137,6 +137,16 @@ class Directory {
     }
 
     await this.loadBlurbCache();
+    // Railway boots from the bundled snapshot, while blurbs.json is not present
+    // in the deployed image. Seed the cache from that snapshot so unchanged
+    // profiles do not require a fresh Anthropic call on every deployment.
+    if (this.hasSnapshot()) {
+      for (const member of this.snapshot.members) {
+        if (member.bioHash && member.blurb && !this.blurbCache[member.bioHash]) {
+          this.blurbCache[member.bioHash] = member.blurb;
+        }
+      }
+    }
     const pages = await this.fetchActiveNotionPages();
     const members = [];
     const excluded = { optedOut: 0, test: 0, missingPublicProfile: 0, inactive: 0 };

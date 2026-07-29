@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const crypto = require('node:crypto');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
@@ -133,6 +134,51 @@ test('sync strips email/rates and excludes opt-out, test, and non-public records
   assert.equal(snapshot.excluded.missingPublicProfile, 1);
   assert.equal(notionRequest.url, 'https://api.notion.com/v1/data_sources/2e8752a1921080b7ad4f000bc493c86e/query');
   assert.equal(notionRequest.options.headers['Notion-Version'], '2025-09-03');
+});
+
+test('sync reuses a bundled snapshot blurb for an unchanged profile', async () => {
+  const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'fec-directory-'));
+  const bio = 'Growth leader for B2B companies.';
+  const bioHash = crypto.createHash('sha256').update(bio).digest('hex');
+  let requestCount = 0;
+  const directory = new Directory({
+    dataDir,
+    notionToken: 'notion-secret',
+    anthropicKey: 'anthropic-secret',
+    fetch: async url => {
+      requestCount += 1;
+      assert.match(url, /api\.notion\.com/);
+      return {
+        ok: true,
+        json: async () => ({
+          has_more: false,
+          results: [
+            notionPage({
+              firstName: 'Alex',
+              lastName: 'Active',
+              directory: '',
+              linkedin: 'https://linkedin.com/in/alex',
+              bio
+            })
+          ]
+        })
+      };
+    }
+  });
+  directory.snapshot = {
+    syncedAt: '2026-07-10T00:00:00.000Z',
+    memberCount: 1,
+    members: [{
+      ...member('Alex Active', 'C Level', 'Melbourne, VIC'),
+      bioHash,
+      blurb: 'Existing grounded blurb.'
+    }]
+  };
+
+  const snapshot = await directory.sync();
+
+  assert.equal(requestCount, 1);
+  assert.equal(snapshot.members[0].blurb, 'Existing grounded blurb.');
 });
 
 function member(name, level, location) {
