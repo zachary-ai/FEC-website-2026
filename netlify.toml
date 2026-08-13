@@ -129,6 +129,12 @@
   force = true
 
 [[redirects]]
+  from = "/day-rate-calculator.html"
+  to = "/day-rate-calculator"
+  status = 301
+  force = true
+
+[[redirects]]
   from = "/sign-up-thank-you.html"
   to = "/sign-up-thank-you"
   status = 301

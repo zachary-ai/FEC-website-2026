@@ -52,7 +52,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         "@type": "ListItem",
         "position": 1,
         "name": "LinkedIn Profile Analyser",
-        "url": "https://thefractionalexec.com.au/linkedin-analyser.html"
+        "url": "https://thefractionalexec.com.au/linkedin-analyser"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Fractional Executive Day Rate Calculator",
+        "url": "https://thefractionalexec.com.au/day-rate-calculator"
       }
     ]
   }
@@ -70,6 +76,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     }
     .tool-card {
       background: #f9fafb;
+      border: 1px solid #eceef2;
       border-radius: 16px;
       padding: 24px;
       display: flex;
@@ -81,6 +88,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     }
     .tool-card .btn {
       margin-top: auto;
+    }
+    .tool-label {
+      align-self: flex-start;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #c1ffdf;
+      color: #111;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
     }
   </style>
 </head>
@@ -147,6 +165,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
               <div class="tools-grid">
                 <div class="tool-card">
+                  <span class="tool-label">New</span>
+                  <h4 style="margin: 0;">Fractional Day Rate Calculator</h4>
+                  <p class="text-opacity-80">Work backwards from your income target, costs, super, profit buffer, and billable capacity to find a sustainable day rate.</p>
+                  <div class="spacer-small"></div>
+                  <a href="day-rate-calculator.html" class="btn w-inline-block">
+                    <div>Calculate my day rate</div>
+                  </a>
+                </div>
+                <div class="tool-card">
                   <h4 style="margin: 0;">LinkedIn Profile Analyser</h4>
                   <p class="text-opacity-80">Paste your Headline + About section and get AI-powered recommendations, alternative headlines, and priority actions.</p>
                   <div class="spacer-small"></div>
@@ -208,6 +235,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                       <a href="tools.html" aria-current="page" class="footer_link w--current">Tools</a>
                     </div>
                     <div style="display:flex; flex-direction:column;">
+                      <a href="day-rate-calculator.html" class="footer_link">Day Rate Calculator</a>
                       <a href="linkedin-analyser.html" class="footer_link">LinkedIn Analyser</a>
                       <a href="https://www.zacharyking.com.au" target="_blank" rel="noopener" class="footer_link">Zachary King GTM</a>
                     </div>

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en-AU" data-wf-page="day-rate-calculator" data-wf-site="64b91a2d1701d9e5b018588d">
+<head>
+  <meta charset="utf-8">
+  <title>Fractional Executive Day Rate Calculator | Free Tool</title>
+  <link rel="canonical" href="https://thefractionalexec.com.au/day-rate-calculator">
+  <meta name="description" content="Calculate the day rate your fractional practice needs to hit your income target, cover costs, fund super, and leave room for profit. Free Australian calculator.">
+  <meta property="og:title" content="Fractional Executive Day Rate Calculator">
+  <meta property="og:description" content="Work backwards from the practice you want to run and calculate a commercially sustainable fractional day rate.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://thefractionalexec.com.au/day-rate-calculator">
+  <meta property="og:site_name" content="The Fractional Exec">
+  <meta property="og:image" content="https://thefractionalexec.com.au/images/image-hero.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Fractional Executive Day Rate Calculator">
+  <meta name="twitter:description" content="Calculate a commercially sustainable fractional day rate from your real income and capacity assumptions.">
+  <meta name="twitter:image" content="https://thefractionalexec.com.au/images/image-hero.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="css/normalize.css" rel="stylesheet" type="text/css">
+  <link href="css/webflow.css" rel="stylesheet" type="text/css">
+  <link href="css/fractionalexec.webflow.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous">
+  <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
+  <script type="text/javascript">WebFont.load({google:{families:["Plus Jakarta Sans:200,300,regular,500,600,700,800","Michroma:regular","Bricolage Grotesque:200,300,regular,500,600,700,800","Instrument Sans:regular,500,600,700"]}});</script>
+  <script type="text/javascript">!function(o,c){var n=c.documentElement,t=" w-mod-";n.className+=t+"js",("ontouchstart"in o||o.DocumentTouch&&c instanceof DocumentTouch)&&(n.className+=t+"touch")}(window,document);</script>
+  <link href="css/zacbot.css?v=20260710-finder" rel="stylesheet" type="text/css">
+  <link href="images/favicon.png" rel="shortcut icon" type="image/x-icon">
+  <link href="images/webclip.png" rel="apple-touch-icon">
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-N2S2FH48');</script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-S8TZ4P52Z1"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-S8TZ4P52Z1');</script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Fractional Executive Day Rate Calculator",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "offers": {"@type": "Offer", "price": "0", "priceCurrency": "AUD"},
+    "description": "A free calculator for fractional executives to estimate a sustainable day rate from income, costs, superannuation, profit, and billable capacity assumptions.",
+    "author": {"@type": "Organization", "name": "The Fractional Exec Community", "url": "https://thefractionalexec.com.au"}
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {"@type":"Question","name":"What is a typical fractional executive day rate in Australia?","acceptedAnswer":{"@type":"Answer","text":"A practical planning range is about $1,200 to $2,500 per day, depending on function, experience, scope, business stage, and the value of the engagement."}},
+      {"@type":"Question","name":"Should I add GST to my fractional day rate?","acceptedAnswer":{"@type":"Answer","text":"This calculator shows fees excluding GST. If you are registered for GST, quote and invoice GST separately where required."}},
+      {"@type":"Question","name":"Why include superannuation and a profit buffer?","acceptedAnswer":{"@type":"Answer","text":"A sustainable independent practice needs to fund benefits and resilience that an employer once covered. The buffer also gives you room for quiet periods, reinvestment, and unexpected costs."}}
+    ]
+  }
+  </script>
+  <style>
+    :root {
+      --calc-ink: oklch(19% 0.012 260);
+      --calc-muted: oklch(48% 0.018 260);
+      --calc-line: oklch(89% 0.012 260);
+      --calc-paper: oklch(98% 0.008 255);
+      --calc-wash: oklch(96% 0.025 255);
+      --calc-accent: oklch(58% 0.22 271);
+      --calc-mint: oklch(92% 0.09 156);
+      --calc-focus: oklch(67% 0.19 263);
+    }
+    .calculator-shell {
+      background: var(--calc-paper);
+      color: var(--calc-ink);
+    }
+    .calculator-shell .header {
+      background: var(--calc-ink);
+      color: var(--calc-paper);
+    }
+    .calculator-shell .navbar_logo-link,
+    .calculator-shell .navbar_link,
+    .calculator-shell .navbar_dropdwn-toggle,
+    .calculator-shell .navbar_button {
+      color: var(--calc-paper);
+    }
+    .calculator-shell .navbar_logo-link .logo-image { filter: brightness(0) invert(1) !important; }
+    .calculator-shell .breadcumb { color: var(--calc-muted); }
+    .calculator-hero {
+      padding: 5.5rem 0 2.75rem;
+    }
+    .calculator-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: .55rem;
+      margin-bottom: 1.1rem;
+      font-size: .82rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .calculator-kicker::before {
+      content: "";
+      width: .7rem;
+      height: .7rem;
+      background: var(--calc-accent);
+      border-radius: 2px;
+    }
+    .calculator-title {
+      max-width: 18ch;
+      margin: 0;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: clamp(2.65rem, 6vw, 5.7rem);
+      font-weight: 600;
+      line-height: .98;
+      letter-spacing: -.045em;
+    }
+    .calculator-intro {
+      max-width: 66ch;
+      margin: 1.5rem 0 0;
+      color: var(--calc-muted);
+      font-size: 1.15rem;
+      line-height: 1.6;
+    }
+    .calculator-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+      gap: 2.75rem;
+      align-items: start;
+      padding-bottom: 6rem;
+    }
+    .calculator-form {
+      background: oklch(99.4% 0.004 255);
+      border: 1px solid var(--calc-line);
+      border-radius: 1.25rem;
+      padding: clamp(1.35rem, 4vw, 2.5rem);
+      box-shadow: 0 1.5rem 4rem oklch(20% .025 260 / .07);
+    }
+    .form-heading {
+      margin: 0 0 .45rem;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: -.02em;
+    }
+    .form-subheading {
+      margin: 0 0 2rem;
+      color: var(--calc-muted);
+      line-height: 1.55;
+    }
+    .input-stack {
+      display: grid;
+      gap: 1.35rem;
+    }
+    .input-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 11rem;
+      gap: 1rem;
+      align-items: center;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--calc-line);
+    }
+    .input-row:last-child {
+      padding-bottom: 0;
+      border-bottom: 0;
+    }
+    .field-label {
+      display: block;
+      margin-bottom: .25rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .field-help {
+      margin: 0;
+      color: var(--calc-muted);
+      font-size: .88rem;
+      line-height: 1.45;
+    }
+    .input-wrap {
+      position: relative;
+    }
+    .input-prefix,
+    .input-suffix {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--calc-muted);
+      font-weight: 700;
+      pointer-events: none;
+    }
+    .input-prefix { left: .85rem; }
+    .input-suffix { right: .85rem; }
+    .calculator-input {
+      width: 100%;
+      min-height: 3.25rem;
+      padding: .75rem 2.25rem .75rem .85rem;
+      border: 1px solid var(--calc-line);
+      border-radius: .75rem;
+      background: var(--calc-paper);
+      color: var(--calc-ink);
+      font: 700 1rem/1.2 "Instrument Sans", sans-serif;
+      text-align: right;
+      transition: border-color 180ms ease-out, box-shadow 180ms ease-out, background 180ms ease-out;
+    }
+    .calculator-input.has-prefix { padding-left: 2rem; }
+    .calculator-input:hover { border-color: oklch(72% .025 260); }
+    .calculator-input:focus {
+      outline: none;
+      border-color: var(--calc-focus);
+      background: oklch(100% 0 0);
+      box-shadow: 0 0 0 3px oklch(67% .19 263 / .18);
+    }
+    .calculator-input[aria-invalid="true"] {
+      border-color: oklch(58% .2 27);
+      box-shadow: 0 0 0 3px oklch(58% .2 27 / .13);
+    }
+    .result-panel {
+      position: sticky;
+      top: 1.5rem;
+      overflow: hidden;
+      border-radius: 1.25rem;
+      background: var(--calc-ink);
+      color: var(--calc-paper);
+      box-shadow: 0 1.5rem 4rem oklch(20% .025 260 / .16);
+    }
+    .result-primary {
+      padding: clamp(1.6rem, 4vw, 2.5rem);
+      background: var(--calc-accent);
+    }
+    .result-eyebrow {
+      margin: 0 0 .45rem;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+    .result-rate {
+      display: flex;
+      align-items: baseline;
+      gap: .55rem;
+      margin: 0;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: clamp(3.4rem, 8vw, 5.5rem);
+      font-weight: 650;
+      line-height: 1;
+      letter-spacing: -.055em;
+    }
+    .result-rate small {
+      font-family: "Instrument Sans", sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+    .result-note {
+      margin: .9rem 0 0;
+      max-width: 40ch;
+      line-height: 1.5;
+    }
+    .result-detail {
+      padding: 1.9rem clamp(1.6rem, 4vw, 2.5rem) 2.25rem;
+    }
+    .result-detail h2 {
+      margin: 0 0 1rem;
+      color: var(--calc-paper);
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 1.45rem;
+    }
+    .result-list {
+      margin: 0;
+    }
+    .result-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 1.25rem;
+      padding: .85rem 0;
+      border-bottom: 1px solid oklch(100% 0 0 / .14);
+    }
+    .result-line dt { color: oklch(88% .01 255); }
+    .result-line dd { margin: 0; font-weight: 700; text-align: right; }
+    .market-lens {
+      margin-top: 1.35rem;
+      padding: 1rem;
+      border-radius: .8rem;
+      background: var(--calc-mint);
+      color: var(--calc-ink);
+      line-height: 1.5;
+    }
+    .market-lens strong { display: block; margin-bottom: .2rem; }
+    .assumption-note {
+      margin: 1.25rem 0 0;
+      color: oklch(78% .015 255);
+      font-size: .82rem;
+      line-height: 1.5;
+    }
+    .explain-section {
+      padding: 5rem 0;
+      background: var(--calc-wash);
+    }
+    .explain-grid {
+      display: grid;
+      grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr);
+      gap: 4rem;
+      align-items: start;
+    }
+    .section-heading {
+      margin: 0;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: clamp(2.2rem, 4vw, 3.8rem);
+      line-height: 1.03;
+      letter-spacing: -.035em;
+    }
+    .formula-block {
+      padding: 1.6rem;
+      border-radius: 1rem;
+      background: var(--calc-ink);
+      color: var(--calc-paper);
+      font-size: 1.1rem;
+      line-height: 1.65;
+    }
+    .formula-block p { margin: 0; }
+    .formula-block p + p { margin-top: .8rem; }
+    .guidance-list {
+      margin: 2rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .guidance-list li {
+      display: grid;
+      grid-template-columns: 2rem minmax(0, 1fr);
+      gap: .8rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--calc-line);
+      line-height: 1.55;
+    }
+    .guidance-list span {
+      color: var(--calc-accent);
+      font-weight: 800;
+    }
+    .faq-section { padding: 5rem 0; }
+    .faq-layout {
+      display: grid;
+      grid-template-columns: minmax(220px, .7fr) minmax(0, 1.3fr);
+      gap: 4rem;
+    }
+    .faq-item { padding: 0 0 1.5rem; border-bottom: 1px solid var(--calc-line); }
+    .faq-item + .faq-item { padding-top: 1.5rem; }
+    .faq-item h3 { margin: 0 0 .65rem; font-size: 1.15rem; }
+    .faq-item p { margin: 0; color: var(--calc-muted); line-height: 1.6; }
+    .calculator-cta {
+      margin-top: 4rem;
+      padding: clamp(1.6rem, 4vw, 3rem);
+      border-radius: 1.1rem;
+      background: var(--calc-ink);
+      color: var(--calc-paper);
+    }
+    .calculator-cta h2 { margin: 0 0 .7rem; color: var(--calc-paper); font-family: "Bricolage Grotesque", sans-serif; }
+    .calculator-cta p { max-width: 60ch; margin: 0 0 1.4rem; color: oklch(82% .012 255); }
+    .calculator-cta .btn { background: var(--calc-paper); color: var(--calc-ink); border-color: var(--calc-paper); }
+    @media (max-width: 991px) {
+      .calculator-layout, .explain-grid, .faq-layout { grid-template-columns: 1fr; gap: 2rem; }
+      .result-panel { position: static; }
+    }
+    @media (max-width: 600px) {
+      .calculator-hero { padding-top: 3.75rem; }
+      .input-row { grid-template-columns: 1fr; gap: .65rem; }
+      .calculator-input { text-align: left; }
+      .result-line { align-items: baseline; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .calculator-input { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N2S2FH48" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <div class="page-wrapper calculator-shell">
+    <div data-animation="default" class="header w-nav" data-easing2="ease" fs-scrolldisable-element="smart-nav" data-easing="ease" data-collapse="medium" data-w-id="dcc53c2d-00cf-bf86-813b-e271a944502f" role="banner" data-duration="400">
+      <div class="navbar_container">
+        <a href="index.html" class="navbar_logo-link w-nav-brand"><img src="images/Icon.svg" loading="lazy" alt="Fractional Exec logo" class="logo-image"><div>Fractional Exec</div></a>
+        <nav role="navigation" id="w-node-dcc53c2d-00cf-bf86-813b-e271a9445035-a944502f" class="navbar_menu is-page-height-tablet w-nav-menu">
+          <a href="index.html" class="navbar_link w-nav-link">Home</a>
+          <a href="about.html" class="navbar_link w-nav-link">About</a>
+          <a href="membership.html" class="navbar_link w-nav-link">Membership</a>
+          <a href="zacbot.html" class="navbar_link w-nav-link">ZacBot</a>
+          <div data-delay="200" data-hover="true" data-w-id="dcc53c2d-00cf-bf86-813b-e271a944503c" class="navbar_menu-dropdown w-dropdown">
+            <div class="navbar_dropdwn-toggle w-dropdown-toggle"><div>Resources</div><div class="dropdown-chevron w-embed"><svg width="100%" height="100%" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M2.55806 6.29544C2.46043 6.19781 2.46043 6.03952 2.55806 5.94189L3.44195 5.058C3.53958 4.96037 3.69787 4.96037 3.7955 5.058L8.00001 9.26251L12.2045 5.058C12.3021 4.96037 12.4604 4.96037 12.5581 5.058L13.4419 5.94189C13.5396 6.03952 13.5396 6.19781 13.4419 6.29544L8.17678 11.5606C8.07915 11.6582 7.92086 11.6582 7.82323 11.5606L2.55806 6.29544Z" fill="currentColor"></path></svg></div></div>
+            <nav class="navbar_dropdown-list w-dropdown-list">
+              <a href="newsletter.html" class="navbar_dropdown-link w-dropdown-link">Newsletter</a>
+              <a href="podcast.html" class="navbar_dropdown-link w-dropdown-link">Podcast</a>
+              <a href="resources.html" class="navbar_dropdown-link w-dropdown-link">Articles</a>
+              <a href="tools.html" class="navbar_dropdown-link w-dropdown-link">Tools</a>
+            </nav>
+          </div>
+        </nav>
+        <div id="w-node-dcc53c2d-00cf-bf86-813b-e271a9445048-a944502f" class="navbar_button-wrapper">
+          <a href="contact-us.html" class="navbar_button w-nav-link">Contact Us</a>
+          <div class="navbar_menu-button w-nav-button"><div class="menu-icon"><div class="menu-icon_line-top"></div><div class="menu-icon_line-middle"><div class="menu-icon_line-middle-inner"></div></div><div class="menu-icon_line-bottom"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <main>
+      <section class="calculator-hero">
+        <div class="padding-global">
+          <div class="container-large">
+            <a href="tools.html" class="breadcumb w-inline-block"><div>Tools /</div></a>
+            <div class="calculator-kicker">Free practice calculator</div>
+            <h1 class="calculator-title">What should your fractional day rate be?</h1>
+            <p class="calculator-intro">Start with the income you want, the costs you carry, and the number of days you can genuinely sell. We will work backwards to a sustainable rate. No email required.</p>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="calculator-heading">
+        <div class="padding-global">
+          <div class="container-large">
+            <div class="calculator-layout">
+              <form class="calculator-form" id="day-rate-form" novalidate>
+                <h2 class="form-heading" id="calculator-heading">Build your rate</h2>
+                <p class="form-subheading">Use annual figures excluding GST. Adjust every assumption to match the practice you actually want to run.</p>
+                <div class="input-stack">
+                  <div class="input-row">
+                    <div><label class="field-label" for="income-target">Personal income target</label><p class="field-help" id="income-help">What you want the business to pay you before personal tax.</p></div>
+                    <div class="input-wrap"><span class="input-prefix">$</span><input class="calculator-input has-prefix" id="income-target" name="income" type="number" min="0" max="2000000" step="5000" value="180000" inputmode="numeric" aria-describedby="income-help" required></div>
+                  </div>
+                  <div class="input-row">
+                    <div><label class="field-label" for="business-costs">Annual business costs</label><p class="field-help" id="costs-help">Software, insurance, accounting, marketing, travel, and support.</p></div>
+                    <div class="input-wrap"><span class="input-prefix">$</span><input class="calculator-input has-prefix" id="business-costs" name="costs" type="number" min="0" max="1000000" step="1000" value="20000" inputmode="numeric" aria-describedby="costs-help" required></div>
+                  </div>
+                  <div class="input-row">
+                    <div><label class="field-label" for="super-rate">Super or retirement contribution</label><p class="field-help" id="super-help">A benefit your practice now needs to fund.</p></div>
+                    <div class="input-wrap"><input class="calculator-input" id="super-rate" name="super" type="number" min="0" max="40" step="0.5" value="12" inputmode="decimal" aria-describedby="super-help" required><span class="input-suffix">%</span></div>
+                  </div>
+                  <div class="input-row">
+                    <div><label class="field-label" for="profit-buffer">Profit and resilience buffer</label><p class="field-help" id="buffer-help">Room for quiet periods, reinvestment, and surprises.</p></div>
+                    <div class="input-wrap"><input class="calculator-input" id="profit-buffer" name="buffer" type="number" min="0" max="50" step="1" value="10" inputmode="decimal" aria-describedby="buffer-help" required><span class="input-suffix">%</span></div>
+                  </div>
+                  <div class="input-row">
+                    <div><label class="field-label" for="working-weeks">Working weeks per year</label><p class="field-help" id="weeks-help">Leave space for holidays, sick leave, and professional development.</p></div>
+                    <div class="input-wrap"><input class="calculator-input" id="working-weeks" name="weeks" type="number" min="1" max="52" step="1" value="46" inputmode="numeric" aria-describedby="weeks-help" required><span class="input-suffix">weeks</span></div>
+                  </div>
+                  <div class="input-row">
+                    <div><label class="field-label" for="billable-days">Billable days per week</label><p class="field-help" id="days-help">Days you can sell after pipeline, admin, and running the business.</p></div>
+                    <div class="input-wrap"><input class="calculator-input" id="billable-days" name="days" type="number" min="0.5" max="5" step="0.5" value="3" inputmode="decimal" aria-describedby="days-help" required><span class="input-suffix">days</span></div>
+                  </div>
+                </div>
+              </form>
+
+              <aside class="result-panel" aria-live="polite" aria-atomic="true">
+                <div class="result-primary">
+                  <p class="result-eyebrow">Recommended minimum</p>
+                  <p class="result-rate"><span id="recommended-rate">$1,800</span><small>/ day</small></p>
+                  <p class="result-note" id="rate-note">Quote this as your floor, then price scope, risk, and value on top.</p>
+                </div>
+                <div class="result-detail">
+                  <h2>Your practice maths</h2>
+                  <dl class="result-list">
+                    <div class="result-line"><dt>Annual revenue target</dt><dd id="revenue-target">$246,222</dd></div>
+                    <div class="result-line"><dt>Sellable days per year</dt><dd id="sellable-days">138 days</dd></div>
+                    <div class="result-line"><dt>Break-even day rate</dt><dd id="break-even-rate">$1,450</dd></div>
+                    <div class="result-line"><dt>1 day/week retainer</dt><dd id="one-day-retainer">$6,900 / month</dd></div>
+                    <div class="result-line"><dt>2 day/week retainer</dt><dd id="two-day-retainer">$13,800 / month</dd></div>
+                  </dl>
+                  <div class="market-lens" id="market-lens"><strong>Inside the planning range</strong>This sits within the $1,200 to $2,500 per day range FEC uses as a practical Australian benchmark.</div>
+                  <p class="assumption-note">Planning tool only. Results exclude GST and personal income tax. They are not financial, tax, or legal advice.</p>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="explain-section" aria-labelledby="method-heading">
+        <div class="padding-global"><div class="container-large"><div class="explain-grid">
+          <h2 class="section-heading" id="method-heading">The rate is a business model, not a salary divided by 260.</h2>
+          <div>
+            <div class="formula-block"><p><strong>Revenue target</strong> = (income target + super + business costs) ÷ (1 − profit buffer)</p><p><strong>Day rate</strong> = revenue target ÷ sellable days, rounded up to the next $50.</p></div>
+            <ol class="guidance-list">
+              <li><span>01</span><div><strong>Protect non-billable time.</strong> Pipeline, proposals, admin, learning, and community are part of the job. If you sell five days every week, the business has nowhere to run.</div></li>
+              <li><span>02</span><div><strong>Treat the result as a floor.</strong> Urgency, complexity, risk, specialist expertise, and measurable value can all justify pricing above it.</div></li>
+              <li><span>03</span><div><strong>Sell the engagement.</strong> Convert the rate into a clear monthly commitment and outcome. Clients should buy access and progress, not a timesheet.</div></li>
+            </ol>
+          </div>
+        </div></div></div>
+      </section>
+
+      <section class="faq-section" aria-labelledby="faq-heading">
+        <div class="padding-global"><div class="container-large"><div class="faq-layout">
+          <h2 class="section-heading" id="faq-heading">Day rate questions, answered plainly.</h2>
+          <div>
+            <article class="faq-item"><h3>What is a typical fractional executive day rate in Australia?</h3><p>A practical planning range is about $1,200 to $2,500 per day. Function, seniority, scarcity, scope, business stage, and the commercial value of the work all move the number.</p></article>
+            <article class="faq-item"><h3>Should I add GST?</h3><p>The calculator shows fees excluding GST. If you are registered for GST, quote and invoice GST separately where required.</p></article>
+            <article class="faq-item"><h3>Why include super and a profit buffer?</h3><p>Your practice needs to fund benefits and resilience that an employer once covered. The buffer gives you room for quiet periods, reinvestment, and unexpected costs.</p></article>
+            <article class="faq-item"><h3>Should I tell clients my day rate?</h3><p>Use it internally to test whether a retainer or project is commercially sound. Externally, lead with the outcome, scope, access, cadence, and monthly investment.</p></article>
+          </div>
+        </div>
+        <div class="calculator-cta"><h2>Build the practice around the rate.</h2><p>FEC is where experienced operators compare positioning, packaging, pricing, pipeline, and the realities of serving multiple clients.</p><a href="membership.html" class="btn w-inline-block"><div>Explore FEC membership</div></a></div>
+        </div></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="padding-global"><div class="container-large"><div class="padding-section-large padding-bottom-0">
+        <div class="padding-bottom padding-xxlarge"><div class="w-layout-grid footer_top-wrapper">
+          <div id="w-node-_513e365c-f211-11bd-126d-f239fc32be32-fc32be2c" class="footer_left-wrapper">
+            <a href="index.html" class="footer_logo-link w-nav-brand"><div class="icon-logo_footer w-embed"><svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 39 46" fill="none" preserveAspectRatio="xMidYMid meet" aria-hidden="true" role="img"><g clip-path="url(#clip0_94_2764)"><path d="M38.0769 0.153809H0V11.8069H38.0769V0.153809Z" fill="#111111"></path><path d="M38.0769 17.1733H0V28.8264H38.0769V17.1733Z" fill="#111111"></path><path d="M12.6923 34.1931H0V45.8462H12.6923V34.1931Z" fill="#111111"></path></g><defs><clipPath id="clip0_94_2764"><rect width="38.0769" height="45.6923" fill="white" transform="translate(0 0.153809)"></rect></clipPath></defs></svg></div><div>Fractional Exec</div></a>
+            <div class="spacer-medium"></div>
+            <div class="footer-nav-link_wrapper">
+              <div style="display:flex;flex-direction:column"><a href="index.html" class="footer_link">Home</a><a href="about.html" class="footer_link">About</a><a href="membership.html" class="footer_link">Membership</a><a href="resources.html" class="footer_link">Resources</a><a href="zacbot.html" class="footer_link">ZacBot</a><a href="contact-us.html" class="footer_link">Contact</a><a href="https://workshq.com.au" class="footer_link">Works</a></div>
+              <div style="display:flex;flex-direction:column"><a href="newsletter.html" class="footer_link">Newsletter</a><a href="podcast.html" class="footer_link">Podcast</a><a href="resources.html" class="footer_link">Articles</a><a href="tools.html" class="footer_link">Tools</a></div>
+              <div style="display:flex;flex-direction:column"><a href="day-rate-calculator.html" aria-current="page" class="footer_link w--current">Day Rate Calculator</a><a href="linkedin-analyser.html" class="footer_link">LinkedIn Analyser</a><a href="https://www.zacharyking.com.au" target="_blank" rel="noopener" class="footer_link">Zachary King GTM</a></div>
+            </div>
+          </div>
+          <div id="w-node-_513e365c-f211-11bd-126d-f239fc32be41-fc32be2c" class="footer-right_wrapper"><div class="code-embed w-embed w-iframe"><iframe src="https://embeds.beehiiv.com/406569a6-feaf-40c3-91cb-ee93f2f4f4e0" data-test-id="beehiiv-embed" width="100%" height="320" frameborder="0" scrolling="no" style="border-radius:16px;border:2px solid #FFFFFF;margin:0;background-color:#FFFFFF" title="Subscribe to the Fractional Exec newsletter"></iframe></div></div>
+        </div></div>
+        <div class="divider-horizontal"></div>
+        <div class="padding-top padding-medium"><div class="footer3_bottom-wrapper"><div class="footer3_credit-text">© 2026 Fractional Exec. All Rights Reserved.</div><div class="footer-social-block-three invert"><a href="https://www.linkedin.com/company/the-fractional-exec-community/?viewAsMember=true" target="_blank" class="footer-social-link-three w-inline-block"><img src="images/Group-1.svg" loading="lazy" alt="LinkedIn"></a><a href="https://www.youtube.com/@thefractionalexec" target="_blank" class="footer-social-link-three w-inline-block"><img src="images/Group-4.svg" loading="lazy" alt="YouTube"></a></div></div></div>
+      </div><div class="spacer-medium"></div></div></div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var form = document.getElementById('day-rate-form');
+      var fields = Array.prototype.slice.call(form.querySelectorAll('input[type="number"]'));
+      var currency = new Intl.NumberFormat('en-AU', {style: 'currency', currency: 'AUD', maximumFractionDigits: 0});
+      var number = new Intl.NumberFormat('en-AU', {maximumFractionDigits: 1});
+
+      function value(id) { return Number(document.getElementById(id).value); }
+      function money(amount) { return currency.format(Math.max(0, amount)); }
+      function roundUp(amount, increment) { return Math.ceil(amount / increment) * increment; }
+
+      function validate(field) {
+        var valid = field.checkValidity() && Number.isFinite(Number(field.value));
+        field.setAttribute('aria-invalid', valid ? 'false' : 'true');
+        return valid;
+      }
+
+      function calculate() {
+        var allValid = fields.map(validate).every(Boolean);
+        if (!allValid) {
+          document.getElementById('recommended-rate').textContent = 'Check inputs';
+          document.getElementById('rate-note').textContent = 'Complete every field with a value inside the stated range.';
+          ['revenue-target', 'sellable-days', 'break-even-rate', 'one-day-retainer', 'two-day-retainer'].forEach(function (id) {
+            document.getElementById(id).textContent = 'Not available';
+          });
+          document.getElementById('market-lens').innerHTML = '<strong>Check your inputs</strong>Use a valid number in every field to calculate your rate.';
+          return;
+        }
+
+        var income = value('income-target');
+        var costs = value('business-costs');
+        var superRate = value('super-rate') / 100;
+        var bufferRate = value('profit-buffer') / 100;
+        var weeks = value('working-weeks');
+        var daysPerWeek = value('billable-days');
+        var sellableDays = weeks * daysPerWeek;
+        var fundedIncome = income * (1 + superRate);
+        var revenueTarget = (fundedIncome + costs) / (1 - bufferRate);
+        var rawRate = revenueTarget / sellableDays;
+        var recommended = roundUp(rawRate, 50);
+        var breakEven = roundUp((income + costs) / sellableDays, 50);
+        var monthlyOneDay = recommended * weeks / 12;
+
+        document.getElementById('recommended-rate').textContent = money(recommended);
+        document.getElementById('rate-note').textContent = 'Quote this as your floor, then price scope, risk, and value on top.';
+        document.getElementById('revenue-target').textContent = money(revenueTarget);
+        document.getElementById('sellable-days').textContent = number.format(sellableDays) + ' days';
+        document.getElementById('break-even-rate').textContent = money(breakEven);
+        document.getElementById('one-day-retainer').textContent = money(roundUp(monthlyOneDay, 50)) + ' / month';
+        document.getElementById('two-day-retainer').textContent = money(roundUp(monthlyOneDay * 2, 50)) + ' / month';
+
+        var lens = document.getElementById('market-lens');
+        if (recommended < 1200) {
+          lens.innerHTML = '<strong>Below the planning range</strong>Your model produces less than $1,200 per day. Check whether you have allowed enough for non-billable time, business costs, and the value of senior expertise.';
+        } else if (recommended <= 2500) {
+          lens.innerHTML = '<strong>Inside the planning range</strong>This sits within the $1,200 to $2,500 per day range FEC uses as a practical Australian benchmark.';
+        } else {
+          lens.innerHTML = '<strong>Above the planning range</strong>Your model needs more than $2,500 per day. That can work for scarce expertise or high-value scope, but your positioning and proof need to support it.';
+        }
+      }
+
+      fields.forEach(function (field) {
+        field.addEventListener('input', calculate);
+        field.addEventListener('blur', function () { validate(field); });
+      });
+      calculate();
+    })();
+  </script>
+  <script src="https://d3e54v103j8qbb.cloudfront.net/js/jquery-3.5.1.min.dc5e7f18c8.js?site=64b91a2d1701d9e5b018588d" type="text/javascript" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+  <script src="js/webflow.js" type="text/javascript"></script>
+  <script src="js/zacbot.js?v=20260729-strict-location" type="text/javascript"></script>
+</body>
+</html>
