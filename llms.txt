@@ -59,7 +59,7 @@ The community serves operators across sales, marketing, operations, and product 
 ### Tools
 - LinkedIn Profile Analyser: https://thefractionalexec.com.au/linkedin-analyser - Free AI-powered tool to optimise your LinkedIn profile for fractional executive opportunities
 - Fractional Executive Day Rate Calculator: https://thefractionalexec.com.au/day-rate-calculator - Free calculator to estimate a sustainable fractional day rate from income, costs, superannuation, profit, and billable capacity
-- ZacBot AI Assistant: https://thefractionalexec.com.au/zacbot - On-demand AI coaching for fractional executives, powered by insights from 1,000+ fractional leaders
+- FracBot AI Assistant: https://thefractionalexec.com.au/zacbot - On-demand AI coaching for fractional executives, powered by insights from 1,000+ fractional leaders
 
 ### Podcast
 - Fractionalism Podcast: https://thefractionalexec.com.au/podcast - Real conversations with fractional executives on building and scaling fractional careers (coming soon)
@@ -76,7 +76,7 @@ The community serves operators across sales, marketing, operations, and product 
 - Tools: https://thefractionalexec.com.au/tools
 - Podcast: https://thefractionalexec.com.au/podcast
 - Newsletter: https://thefractionalexec.com.au/newsletter
-- ZacBot AI Assistant: https://thefractionalexec.com.au/zacbot
+- FracBot AI Assistant: https://thefractionalexec.com.au/zacbot
 - LinkedIn Analyser: https://thefractionalexec.com.au/linkedin-analyser
 - Day Rate Calculator: https://thefractionalexec.com.au/day-rate-calculator
 - Contact: https://thefractionalexec.com.au/contact-us

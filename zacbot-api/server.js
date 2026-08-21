@@ -247,20 +247,20 @@ async function sendSlack(text) {
 }
 
 function slackLead(email) {
-  sendSlack(`*[ZacBot Lead]* ${email}\nCaptured at trial gate. Follow up.`);
+  sendSlack(`*[FracBot Lead]* ${email}\nCaptured at trial gate. Follow up.`);
 }
 
 function slackCapWarning() {
-  sendSlack(`*[ZacBot Warning]* Daily usage at ${dailyRequestCount}/${DAILY_REQUEST_CAP} (${Math.round(dailyRequestCount / DAILY_REQUEST_CAP * 100)}%). Approaching cap.`);
+  sendSlack(`*[FracBot Warning]* Daily usage at ${dailyRequestCount}/${DAILY_REQUEST_CAP} (${Math.round(dailyRequestCount / DAILY_REQUEST_CAP * 100)}%). Approaching cap.`);
 }
 
 function slackCapHit() {
-  sendSlack(`*[ZacBot ALERT]* Daily cap of ${DAILY_REQUEST_CAP} requests hit. All further requests blocked until tomorrow.`);
+  sendSlack(`*[FracBot ALERT]* Daily cap of ${DAILY_REQUEST_CAP} requests hit. All further requests blocked until tomorrow.`);
 }
 
 function slackFeedback(vote, question) {
   if (vote === 'down') {
-    sendSlack(`*[ZacBot Feedback]* Thumbs down on: "${question}"\nCheck if the answer needs improvement.`);
+    sendSlack(`*[FracBot Feedback]* Thumbs down on: "${question}"\nCheck if the answer needs improvement.`);
   }
 }
 
@@ -318,7 +318,7 @@ async function sendWeeklySlackSummary() {
   const weekLeads = leadLog.filter(l => inWindow(l.timestamp));
 
   const text = [
-    `*ZacBot Weekly Summary (${new Date().toLocaleDateString('en-AU')})*`,
+    `*FracBot Weekly Summary (${new Date().toLocaleDateString('en-AU')})*`,
     `Requests this week: ${weeklyRequestCount}`,
     `Leads: ${weekLeads.length}${weekLeads.length > 0 ? ' (' + weekLeads.map(l => l.email).join(', ') + ')' : ''}`,
     `Feedback: ${thumbsUp} up, ${thumbsDown} down`,
@@ -353,7 +353,7 @@ setInterval(() => {
 
 // Health check (no sensitive data exposed)
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', service: 'ZacBot API' });
+  res.json({ status: 'ok', service: 'FracBot API' });
 });
 
 // FIX [Critical]: Dashboard uses separate ADMIN_TOKEN
@@ -484,7 +484,7 @@ app.post('/api/find', async (req, res) => {
   }
 
   if (!checkDailyCap()) {
-    return res.status(503).json({ error: 'ZacBot has reached its daily limit. Please try again tomorrow.' });
+    return res.status(503).json({ error: 'FracBot has reached its daily limit. Please try again tomorrow.' });
   }
 
   logQuestion(`[finder] ${cleanQuery}`, clientIP, isMember);
@@ -575,7 +575,7 @@ app.post('/chat', async (req, res) => {
 
     if (!checkDailyCap()) {
       return res.status(503).json({
-        error: 'ZacBot has reached its daily limit. Please try again tomorrow.'
+        error: 'FracBot has reached its daily limit. Please try again tomorrow.'
       });
     }
 
@@ -618,7 +618,7 @@ app.post('/chat', async (req, res) => {
   // ── Check API key ───────────────────────────────────────────
   if (!process.env.ANTHROPIC_API_KEY) {
     console.error('ANTHROPIC_API_KEY not set');
-    return res.status(500).json({ error: 'ZacBot is temporarily unavailable. Please try again later.' });
+    return res.status(500).json({ error: 'FracBot is temporarily unavailable. Please try again later.' });
   }
 
   // ── Rate limiting (per IP) ──────────────────────────────────
@@ -629,7 +629,7 @@ app.post('/chat', async (req, res) => {
   // ── Daily cap ───────────────────────────────────────────────
   if (!checkDailyCap()) {
     return res.status(503).json({
-      error: 'ZacBot has reached its daily limit. Please try again tomorrow.'
+      error: 'FracBot has reached its daily limit. Please try again tomorrow.'
     });
   }
 
@@ -687,8 +687,8 @@ app.post('/chat', async (req, res) => {
         const errText = await anthropicRes.text();
         console.error('[STREAM] API error:', anthropicRes.status, errText.substring(0, 200));
         const errMsg = anthropicRes.status === 429
-          ? 'ZacBot is busy right now. Please try again in a minute.'
-          : 'ZacBot is temporarily unavailable. Please try again later.';
+          ? 'FracBot is busy right now. Please try again in a minute.'
+          : 'FracBot is temporarily unavailable. Please try again later.';
         res.write(`data: ${JSON.stringify({ type: 'error', error: errMsg })}\n\n`);
         res.end();
         return;
@@ -730,8 +730,8 @@ app.post('/chat', async (req, res) => {
       console.error('[STREAM] Fetch error:', error.message || error);
       try {
         const errorMessage = timedOut
-          ? 'ZacBot is taking too long to respond right now. Please try again in a minute.'
-          : 'ZacBot is temporarily unavailable.';
+          ? 'FracBot is taking too long to respond right now. Please try again in a minute.'
+          : 'FracBot is temporarily unavailable.';
         if (!res.writableEnded) {
           res.write(`data: ${JSON.stringify({ type: 'error', error: errorMessage })}\n\n`);
           res.end();
@@ -750,7 +750,7 @@ process.on('unhandledRejection', (err) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`ZacBot API running on port ${PORT}`);
+  console.log(`FracBot API running on port ${PORT}`);
   console.log(`  Daily request cap: ${DAILY_REQUEST_CAP}`);
   console.log(`  Rate limit: ${RATE_LIMIT_PER_MIN} req/min per IP`);
   console.log(`  Max message length: ${MAX_MESSAGE_LENGTH} chars`);

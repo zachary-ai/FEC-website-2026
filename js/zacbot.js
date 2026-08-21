@@ -81,7 +81,7 @@
         <div class="zacbot-header">
           <div class="zacbot-header__title">
             <span class="zacbot-header__status"></span>
-            ZacBot
+            FracBot
           </div>
           <div class="zacbot-header__actions">
             <button class="zacbot-header__btn" id="zacbot-new-chat">New chat</button>
@@ -91,7 +91,7 @@
         <div id="zacbot-email-gate" style="display:none;">
           <div class="zacbot-trial-gate">
             <h3>You're out of free questions</h3>
-            <p>Drop your email and we'll let you know how to get unlimited access to ZacBot and the full FEC community.</p>
+            <p>Drop your email and we'll let you know how to get unlimited access to FracBot and the full FEC community.</p>
             <div class="zacbot-email-form">
               <input type="email" class="zacbot-input" id="zacbot-email-input" placeholder="your@email.com" style="max-width:280px;margin:0 auto;">
               <button class="zacbot-send-btn" id="zacbot-email-submit" style="margin-top:0.5rem;">Send</button>
@@ -101,8 +101,8 @@
         </div>
         <div id="zacbot-trial-gate" style="display:none;">
           <div class="zacbot-trial-gate">
-            <h3>Want unlimited access to ZacBot?</h3>
-            <p>Join the Fractional Exec Community for unlimited ZacBot, plus workshops, playbooks, templates, and a network of 1,100+ fractional executives.</p>
+            <h3>Want unlimited access to FracBot?</h3>
+            <p>Join the Fractional Exec Community for unlimited FracBot, plus workshops, playbooks, templates, and a network of 1,100+ fractional executives.</p>
             <a href="${MEMBERSHIP_URL}" target="_blank" class="zacbot-trial-gate__cta">Join the Community</a>
           </div>
         </div>
@@ -186,7 +186,7 @@
 
     messagesEl.innerHTML = `
       <div class="zacbot-welcome">
-        <h3>Hey, I'm ZacBot</h3>
+        <h3>Hey, I'm FracBot</h3>
         <p>I'm an AI assistant trained on Zac King's frameworks for fractional executives. Ask me about positioning, pricing, client delivery, GTM strategy, AI tools, or building your practice.</p>
         <div class="zacbot-suggestions">${suggestionsHTML}</div>
         ${trialNote}
@@ -339,7 +339,7 @@
       })
       .catch(function (err) {
         if (err.name !== 'AbortError') {
-          messages[assistantIndex].content = err.message || 'ZacBot is temporarily unavailable. Please try again later.';
+          messages[assistantIndex].content = err.message || 'FracBot is temporarily unavailable. Please try again later.';
           renderMessages(container, false);
         }
         finishStream(container, false);
@@ -377,7 +377,7 @@
       if (!isUser && !msg.content && showTyping && isLast) continue;
 
       html += '<div class="zacbot-message zacbot-message--' + msg.role + '">';
-      html += '<div class="zacbot-message__avatar">' + (isUser ? 'You' : 'ZB') + '</div>';
+      html += '<div class="zacbot-message__avatar">' + (isUser ? 'You' : 'FB') + '</div>';
       html += '<div class="zacbot-message__content">' + formatMessage(msg.content) + renderDirectoryResults(msg.directory) + '</div>';
       // Add feedback buttons on completed assistant messages (not during streaming)
       if (!isUser && msg.content && !(isLast && isStreaming)) {
@@ -392,7 +392,7 @@
 
     if (showTyping) {
       html += '<div class="zacbot-message zacbot-message--assistant">';
-      html += '<div class="zacbot-message__avatar">ZB</div>';
+      html += '<div class="zacbot-message__avatar">FB</div>';
       html += '<div class="zacbot-typing"><div class="zacbot-typing__dot"></div><div class="zacbot-typing__dot"></div><div class="zacbot-typing__dot"></div></div>';
       html += '</div>';
     }
@@ -577,7 +577,7 @@
     // Create bubble button
     var bubble = document.createElement('button');
     bubble.className = 'zacbot-bubble';
-    bubble.setAttribute('aria-label', 'Open ZacBot chat');
+    bubble.setAttribute('aria-label', 'Open FracBot chat');
     bubble.innerHTML = '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>';
 
     // Create panel
