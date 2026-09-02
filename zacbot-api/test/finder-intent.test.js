@@ -64,6 +64,13 @@ test('PR and comms queries map to the Marketing function in the fallback parser'
   assert.deepEqual(fallbackParseQuery('public relations specialist').functions, ['Marketing']);
 });
 
+test('short skill acronyms survive the fallback keyword filter', () => {
+  const parsed = fallbackParseQuery('which members can help with PR?');
+  assert.ok(parsed.keywords.includes('pr'), `keywords were ${JSON.stringify(parsed.keywords)}`);
+  assert.ok(!parsed.keywords.includes('members'));
+  assert.ok(!parsed.keywords.includes('help'));
+});
+
 test('non-string input is rejected', () => {
   assert.equal(isFinderIntent(null), false);
   assert.equal(isFinderIntent(undefined), false);

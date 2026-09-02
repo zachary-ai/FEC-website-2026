@@ -378,8 +378,8 @@ class Directory {
       }))
       .sort((a, b) => (
         a.locationTier - b.locationTier ||
-        a.levelRank - b.levelRank ||
         b.keywordScore - a.keywordScore ||
+        a.levelRank - b.levelRank ||
         a.member.name.localeCompare(b.member.name)
       ));
 
@@ -490,8 +490,13 @@ function fallbackParseQuery(query) {
   const keywords = compactText(query)
     .toLowerCase()
     .split(/\W+/)
-    .filter(word => word.length > 2)
-    .filter(word => !['find', 'need', 'looking', 'fractional', 'exec', 'executive', 'for', 'with', 'near'].includes(word))
+    .filter(word => word.length >= 2)
+    .filter(word => ![
+      'find', 'need', 'looking', 'fractional', 'exec', 'executive', 'for', 'with', 'near',
+      'which', 'who', 'what', 'can', 'help', 'members', 'member', 'anyone', 'someone', 'somebody',
+      'does', 'do', 'the', 'and', 'any', 'are', 'there', 'our', 'community', 'fec', 'you', 'we',
+      'know', 'have', 'got', 'recommend', 'in', 'on', 'at', 'to', 'of', 'me', 'is', 'an', 'good'
+    ].includes(word))
     .slice(0, 10);
 
   return {
@@ -574,10 +579,18 @@ function nearestSuggestion(members, parsed) {
   return 'No exact matches yet. Try a broader function or location.';
 }
 
+// Whole-word matching: a substring test lets "pr" score against "practice",
+// "proven" and "product", which made short skill terms useless for ranking.
 function keywordScore(text, keywords) {
   if (!keywords || !keywords.length) return 0;
-  const lower = String(text || '').toLowerCase();
-  return keywords.reduce((score, keyword) => score + (lower.includes(String(keyword).toLowerCase()) ? 1 : 0), 0);
+  const haystack = String(text || '');
+  return keywords.reduce((score, keyword) => {
+    const term = String(keyword).trim();
+    if (!term) return score;
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = new RegExp(`(^|[^a-z0-9])${escaped}(?=$|[^a-z0-9])`, 'i');
+    return score + (pattern.test(haystack) ? 1 : 0);
+  }, 0);
 }
 
 function publicCard(member, fitNote) {
