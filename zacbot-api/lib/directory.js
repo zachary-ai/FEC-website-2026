@@ -391,7 +391,12 @@ class Directory {
     const skillFilterApplied = skillMatches.length > 0;
     const scored = skillFilterApplied ? skillMatches : ranked;
     const functionLabel = parsed.functions.join('/');
-    const label = skills.length ? skillLabel(skills) : '';
+    // Only name the skills that matched somebody, so a typo in the question
+    // ("wiht PR") never shows up in the note or the fit notes.
+    const matchedSkills = skillFilterApplied
+      ? skills.filter(skill => skillMatches.some(item => keywordScore(item.member.searchText, [skill]) > 0))
+      : skills;
+    const label = matchedSkills.length ? skillLabel(matchedSkills) : '';
 
     const topMatches = scored.slice(0, options.limit || 10);
     const cards = topMatches.map(item => publicCard(

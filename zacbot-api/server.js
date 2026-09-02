@@ -593,6 +593,7 @@ app.post('/chat', async (req, res) => {
           suggestion: result.suggestion,
           broaderCount: result.broaderCount,
           broaderSuggestion: result.broaderSuggestion,
+          skillFilterApplied: result.skillFilterApplied === true,
           degraded: result.degraded
         });
       }
