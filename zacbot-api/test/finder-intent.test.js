@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 const { isFinderIntent } = require('../lib/finder-intent');
-const { fallbackParseQuery } = require('../lib/directory');
+const { fallbackParseQuery, Directory } = require('../lib/directory');
 
 const SHOULD_SEARCH = [
   // The two phrasings the launch post promised would work
@@ -62,6 +62,7 @@ test('PR and comms queries map to the Marketing function in the fallback parser'
   assert.deepEqual(fallbackParseQuery('which members can help with PR?').functions, ['Marketing']);
   assert.deepEqual(fallbackParseQuery('anyone who does comms in Sydney').functions, ['Marketing']);
   assert.deepEqual(fallbackParseQuery('public relations specialist').functions, ['Marketing']);
+  assert.ok(fallbackParseQuery('anyone who does public relations?').keywords.includes('pr'));
 });
 
 test('short skill acronyms survive the fallback keyword filter', () => {
@@ -69,6 +70,25 @@ test('short skill acronyms survive the fallback keyword filter', () => {
   assert.ok(parsed.keywords.includes('pr'), `keywords were ${JSON.stringify(parsed.keywords)}`);
   assert.ok(!parsed.keywords.includes('members'));
   assert.ok(!parsed.keywords.includes('help'));
+});
+
+test('a public relations query ranks the member whose bio says PR above a generic C Level marketer', async () => {
+  const directory = new Directory({ anthropicKey: '' });
+  const base = { functions: ['Marketing'], location: 'Auckland', region: 'APAC', linkedin: '', blurb: '' };
+  directory.snapshot = {
+    syncedAt: new Date().toISOString(),
+    memberCount: 3,
+    members: [
+      { ...base, id: 'a', name: 'Alpha Generic', level: 'C Level', searchText: 'Alpha Generic C Level Marketing Auckland brand and growth marketer with proven product launches' },
+      { ...base, id: 'b', name: 'Beta PR', level: 'VP', searchText: 'Beta PR VP Marketing Auckland specialist disciplines: sales, marketing, PR and brand' },
+      { ...base, id: 'c', name: 'Gamma Comms', level: 'Manager', searchText: 'Gamma Comms Manager Marketing Auckland communications planner and brand strategist' },
+    ]
+  };
+  const result = await directory.search('anyone who does public relations?');
+  const names = result.cards.map(card => card.name);
+  assert.equal(names[0], 'Beta PR', `ranking was ${JSON.stringify(names)}`);
+  assert.equal(names[1], 'Gamma Comms', `ranking was ${JSON.stringify(names)}`);
+  assert.equal(names[2], 'Alpha Generic', `ranking was ${JSON.stringify(names)}`);
 });
 
 test('non-string input is rejected', () => {

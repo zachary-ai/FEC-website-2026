@@ -487,8 +487,13 @@ function fallbackParseQuery(query) {
   }
 
   const location = detectLocation(query);
-  const keywords = compactText(query)
-    .toLowerCase()
+  // Multi-word skill phrases ("public relations", "customer experience") must
+  // survive as one keyword so they can score against members who wrote "PR" or "CX".
+  const lowerQuery = compactText(query).toLowerCase();
+  const phraseKeywords = KEYWORD_SYNONYMS
+    .filter(group => group.some(variant => variant.includes(' ') && wholeWordPattern(variant).test(lowerQuery)))
+    .map(group => group[0]);
+  const keywords = phraseKeywords.concat(lowerQuery
     .split(/\W+/)
     .filter(word => word.length >= 2)
     .filter(word => ![
@@ -496,7 +501,7 @@ function fallbackParseQuery(query) {
       'which', 'who', 'what', 'can', 'help', 'members', 'member', 'anyone', 'someone', 'somebody',
       'does', 'do', 'the', 'and', 'any', 'are', 'there', 'our', 'community', 'fec', 'you', 'we',
       'know', 'have', 'got', 'recommend', 'in', 'on', 'at', 'to', 'of', 'me', 'is', 'an', 'good'
-    ].includes(word))
+    ].includes(word)))
     .slice(0, 10);
 
   return {
@@ -579,17 +584,46 @@ function nearestSuggestion(members, parsed) {
   return 'No exact matches yet. Try a broader function or location.';
 }
 
+// Members write "PR" while askers write "public relations" (and vice versa).
+// Each cluster counts once, however the query or the bio phrases it.
+const KEYWORD_SYNONYMS = [
+  ['pr', 'public relations', 'media relations', 'comms', 'communications', 'communication', 'publicist', 'publicity'],
+  ['hr', 'human resources', 'people and culture', 'people & culture', 'talent'],
+  ['cx', 'customer experience'],
+  ['cs', 'customer success'],
+  ['ops', 'operations', 'operational'],
+  ['gtm', 'go to market', 'go-to-market'],
+  ['bd', 'business development', 'partnerships'],
+  ['ai', 'artificial intelligence', 'automation'],
+  ['fundraising', 'capital raising', 'raise capital', 'raising capital', 'investor'],
+  ['seo', 'search engine optimisation', 'search engine optimization'],
+];
+
+function expandKeyword(term) {
+  const lower = term.toLowerCase();
+  const cluster = KEYWORD_SYNONYMS.find(group => group.includes(lower));
+  return cluster ? cluster : [lower];
+}
+
 // Whole-word matching: a substring test lets "pr" score against "practice",
 // "proven" and "product", which made short skill terms useless for ranking.
+function wholeWordPattern(term) {
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(^|[^a-z0-9])${escaped}(?=$|[^a-z0-9])`, 'i');
+}
+
 function keywordScore(text, keywords) {
   if (!keywords || !keywords.length) return 0;
   const haystack = String(text || '');
+  const seenClusters = new Set();
   return keywords.reduce((score, keyword) => {
     const term = String(keyword).trim();
     if (!term) return score;
-    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const pattern = new RegExp(`(^|[^a-z0-9])${escaped}(?=$|[^a-z0-9])`, 'i');
-    return score + (pattern.test(haystack) ? 1 : 0);
+    const variants = expandKeyword(term);
+    const clusterKey = variants.join('|');
+    if (seenClusters.has(clusterKey)) return score;
+    seenClusters.add(clusterKey);
+    return score + (variants.some(v => wholeWordPattern(v).test(haystack)) ? 1 : 0);
   }, 0);
 }
 
