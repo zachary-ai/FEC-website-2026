@@ -86,9 +86,23 @@ test('a public relations query ranks the member whose bio says PR above a generi
   };
   const result = await directory.search('anyone who does public relations?');
   const names = result.cards.map(card => card.name);
-  assert.equal(names[0], 'Beta PR', `ranking was ${JSON.stringify(names)}`);
-  assert.equal(names[1], 'Gamma Comms', `ranking was ${JSON.stringify(names)}`);
-  assert.equal(names[2], 'Alpha Generic', `ranking was ${JSON.stringify(names)}`);
+  assert.deepEqual(names, ['Beta PR', 'Gamma Comms'], `ranking was ${JSON.stringify(names)}`);
+  assert.equal(result.count, 2);
+  assert.equal(result.skillFilterApplied, true);
+  assert.match(result.broaderSuggestion, /1 other Marketing member does not mention PR/);
+  assert.match(result.cards[0].fitNote, /Mentions PR in their profile/);
+
+  // No skill named: the whole function comes back, no filter, no skill note.
+  const broad = await directory.search('find a fractional CMO');
+  assert.equal(broad.count, 3);
+  assert.equal(broad.skillFilterApplied, false);
+  assert.equal(broad.broaderSuggestion, null);
+
+  // Skill named but nobody mentions it: honest note, full function list.
+  const miss = await directory.search('anyone who does SEO?');
+  assert.equal(miss.count, 3);
+  assert.equal(miss.skillFilterApplied, false);
+  assert.match(miss.broaderSuggestion, /None of them mention SEO specifically/);
 });
 
 test('non-string input is rejected', () => {

@@ -25,7 +25,7 @@ const LEVEL_RANK = {
 };
 
 const ROLE_PATTERNS = [
-  { pattern: /\b(cmo|marketing|growth|brand|demand gen|performance|pr|comms|communications?|public relations|media relations|publicist)\b/i, functions: ['Marketing'] },
+  { pattern: /\b(cmo|marketing|growth|brand|demand gen|performance|pr|comms|communications?|public relations|media relations|publicist|seo|content)\b/i, functions: ['Marketing'] },
   { pattern: /\b(coo|operations?|operator|ops)\b/i, functions: ['Operations (eg COO)'] },
   { pattern: /\b(cfo|finance|financial|commercial finance)\b/i, functions: ['Finance'] },
   { pattern: /\b(cto|engineering|engineer|technical|technology|tech)\b/i, functions: ['Engineering (eg CTO)'] },
@@ -369,12 +369,13 @@ class Directory {
     const locationMatches = parsed.location
       ? functionMatches.filter(member => matchesLocationScope(member, parsed.location))
       : functionMatches;
-    const scored = locationMatches
+    const skills = skillKeywords(parsed);
+    const ranked = locationMatches
       .map(member => ({
         member,
         locationTier: getLocationTier(member, parsed.location),
         levelRank: Object.prototype.hasOwnProperty.call(LEVEL_RANK, member.level) ? LEVEL_RANK[member.level] : 9,
-        keywordScore: keywordScore(member.searchText, parsed.keywords)
+        keywordScore: keywordScore(member.searchText, skills)
       }))
       .sort((a, b) => (
         a.locationTier - b.locationTier ||
@@ -383,9 +384,30 @@ class Directory {
         a.member.name.localeCompare(b.member.name)
       ));
 
+    // A named skill narrows the list to members who actually mention it.
+    // Everyone else in the function is still counted, so the answer is honest
+    // about what was and was not found rather than padding with lookalikes.
+    const skillMatches = skills.length ? ranked.filter(item => item.keywordScore > 0) : [];
+    const skillFilterApplied = skillMatches.length > 0;
+    const scored = skillFilterApplied ? skillMatches : ranked;
+    const functionLabel = parsed.functions.join('/');
+    const label = skills.length ? skillLabel(skills) : '';
+
     const topMatches = scored.slice(0, options.limit || 10);
-    const cards = topMatches.map(item => publicCard(item.member, fallbackFitNote(parsed, item.member)));
+    const cards = topMatches.map(item => publicCard(
+      item.member,
+      fallbackFitNote(parsed, item.member, skillFilterApplied ? label : '')
+    ));
     const broaderCount = Math.max(0, functionMatches.length - scored.length);
+
+    let broaderSuggestion = null;
+    if (skillFilterApplied && broaderCount > 0) {
+      broaderSuggestion = `${broaderCount} other ${functionLabel} member${broaderCount === 1 ? '' : 's'} ${broaderCount === 1 ? 'does not' : 'do not'} mention ${label} in their profile, so they were left out.`;
+    } else if (skills.length && !skillFilterApplied && scored.length > 0) {
+      broaderSuggestion = `None of them mention ${label} specifically, so this is every ${functionLabel} member${parsed.location ? ` in ${locationLabel(parsed.location)}` : ''}.`;
+    } else if (parsed.location && broaderCount > 0) {
+      broaderSuggestion = `${broaderCount} additional ${functionLabel} member${broaderCount === 1 ? '' : 's'} are available outside ${locationLabel(parsed.location)}. Run the search again without a location to see them.`;
+    }
 
     return {
       count: scored.length,
@@ -393,11 +415,10 @@ class Directory {
       shownCount: cards.length,
       cards,
       parsed,
+      skillFilterApplied,
       suggestion: scored.length === 0 ? nearestSuggestion(snapshot.members, parsed) : null,
       broaderCount,
-      broaderSuggestion: parsed.location && broaderCount > 0
-        ? `${broaderCount} additional ${parsed.functions.join('/')} member${broaderCount === 1 ? '' : 's'} are available outside ${locationLabel(parsed.location)}. Run the search again without a location to see them.`
-        : null,
+      broaderSuggestion,
       degraded: false
     };
   }
@@ -490,12 +511,14 @@ function fallbackParseQuery(query) {
   // Multi-word skill phrases ("public relations", "customer experience") must
   // survive as one keyword so they can score against members who wrote "PR" or "CX".
   const lowerQuery = compactText(query).toLowerCase();
-  const phraseKeywords = KEYWORD_SYNONYMS
-    .filter(group => group.some(variant => variant.includes(' ') && wholeWordPattern(variant).test(lowerQuery)))
-    .map(group => group[0]);
+  const matchedPhrases = KEYWORD_SYNONYMS
+    .flatMap(group => group.filter(variant => variant.includes(' ') && wholeWordPattern(variant).test(lowerQuery)));
+  const phraseKeywords = Array.from(new Set(matchedPhrases.map(phrase => expandKeyword(phrase)[0])));
+  const phraseWords = new Set(matchedPhrases.flatMap(phrase => phrase.split(/\W+/)));
   const keywords = phraseKeywords.concat(lowerQuery
     .split(/\W+/)
     .filter(word => word.length >= 2)
+    .filter(word => !phraseWords.has(word))
     .filter(word => ![
       'find', 'need', 'looking', 'fractional', 'exec', 'executive', 'for', 'with', 'near',
       'which', 'who', 'what', 'can', 'help', 'members', 'member', 'anyone', 'someone', 'somebody',
@@ -520,8 +543,48 @@ function normaliseParsedQuery(originalQuery, parsed) {
   return {
     functions: functions.length ? Array.from(new Set(functions)) : fallback.functions,
     location: typeof parsed.location === 'string' && parsed.location.trim() ? detectLocation(parsed.location) || parsed.location.trim() : fallback.location,
-    keywords: Array.isArray(parsed.keywords) ? parsed.keywords.map(String).slice(0, 10) : fallback.keywords
+    // Union, not either/or: the model sometimes returns [] and the fallback
+    // sometimes misses a phrase the model caught.
+    keywords: Array.from(new Set(
+      (Array.isArray(parsed.keywords) ? parsed.keywords.map(k => String(k).toLowerCase().trim()) : [])
+        .concat(fallback.keywords)
+        .filter(Boolean)
+    )).slice(0, 12)
   };
+}
+
+const GENERIC_KEYWORDS = new Set([
+  'fractional', 'fractionals', 'interim', 'exec', 'execs', 'executive', 'executives', 'member', 'members',
+  'senior', 'experienced', 'expert', 'specialist', 'consultant', 'leader', 'operator', 'help', 'someone', 'anyone',
+  'people', 'person', 'work', 'works', 'experience', 'background', 'level', 'vp', 'director', 'head', 'chief'
+]);
+
+// Keywords that describe a skill or specialty, as opposed to the function
+// (already a hard filter), the seniority, or a place. These are the only ones
+// allowed to narrow a result set.
+function skillKeywords(parsed) {
+  return (parsed.keywords || [])
+    .map(k => String(k).toLowerCase().trim())
+    .filter(k => k.length >= 2)
+    .filter(k => !GENERIC_KEYWORDS.has(k))
+    .filter(k => !detectLocation(k))
+    // Anything in a synonym cluster is a skill even if it also maps to a
+    // function (PR sits under Marketing but is far narrower than Marketing).
+    .filter(k => KEYWORD_SYNONYMS.some(group => group.includes(k)) || !ROLE_PATTERNS.some(mapping => mapping.pattern.test(k)));
+}
+
+function skillLabel(keywords) {
+  const labels = [];
+  const seen = new Set();
+  for (const keyword of keywords) {
+    const cluster = expandKeyword(keyword);
+    const key = cluster.join('|');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const canonical = cluster[0];
+    labels.push(canonical.length <= 3 ? canonical.toUpperCase() : canonical);
+  }
+  return labels.join(' / ');
 }
 
 function detectLocation(text) {
@@ -639,10 +702,11 @@ function publicCard(member, fitNote) {
   };
 }
 
-function fallbackFitNote(parsed, member) {
+function fallbackFitNote(parsed, member, matchedSkill = '') {
   const role = parsed.functions.find(fn => member.functions.includes(fn)) || member.functions[0] || 'fractional';
   const location = member.location ? ` in ${member.location}` : '';
-  return `${member.level || 'Experienced'} ${role} operator${location}.`;
+  const skill = matchedSkill ? ` Mentions ${matchedSkill} in their profile.` : '';
+  return `${member.level || 'Experienced'} ${role} operator${location}.${skill}`;
 }
 
 function fallbackBlurb(bio) {
