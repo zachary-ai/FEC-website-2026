@@ -25,7 +25,7 @@ const LEVEL_RANK = {
 };
 
 const ROLE_PATTERNS = [
-  { pattern: /\b(cmo|marketing|growth|brand|demand gen|performance)\b/i, functions: ['Marketing'] },
+  { pattern: /\b(cmo|marketing|growth|brand|demand gen|performance|pr|comms|communications?|public relations|media relations|publicist)\b/i, functions: ['Marketing'] },
   { pattern: /\b(coo|operations?|operator|ops)\b/i, functions: ['Operations (eg COO)'] },
   { pattern: /\b(cfo|finance|financial|commercial finance)\b/i, functions: ['Finance'] },
   { pattern: /\b(cto|engineering|engineer|technical|technology|tech)\b/i, functions: ['Engineering (eg CTO)'] },

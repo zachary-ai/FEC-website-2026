@@ -3,6 +3,7 @@ const cors = require('cors');
 const dns = require('node:dns');
 const { loadKnowledgeBase } = require('./lib/knowledge');
 const { directory, DirectoryUnavailableError } = require('./lib/directory');
+const { isFinderIntent } = require('./lib/finder-intent');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -500,10 +501,6 @@ app.post('/api/find', async (req, res) => {
     res.status(500).json({ error: 'Directory search is temporarily unavailable.' });
   }
 });
-
-function isFinderIntent(text) {
-  return /\b(find|looking for|need|recommend|know)\b.{0,80}\b(fractional|cmo|cfo|coo|cto|cro|vp sales|operator|exec|executive)\b/i.test(text);
-}
 
 function writeSseHeaders(req, res) {
   res.setHeader('Content-Type', 'text/event-stream');
