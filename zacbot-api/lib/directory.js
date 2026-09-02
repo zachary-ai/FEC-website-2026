@@ -587,7 +587,7 @@ function nearestSuggestion(members, parsed) {
 // Members write "PR" while askers write "public relations" (and vice versa).
 // Each cluster counts once, however the query or the bio phrases it.
 const KEYWORD_SYNONYMS = [
-  ['pr', 'public relations', 'media relations', 'comms', 'communications', 'communication', 'publicist', 'publicity'],
+  ['pr', 'public relations', 'media relations', 'comms', 'communications', 'publicist', 'publicity'],
   ['hr', 'human resources', 'people and culture', 'people & culture', 'talent'],
   ['cx', 'customer experience'],
   ['cs', 'customer success'],
